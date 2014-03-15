@@ -561,7 +561,7 @@
 }
 #me-resume strong {
   line-height: 0; /* The strong element shouldn't have any effect on its parent element's line height. */
-  color: #555;
+  color: #444;
 }
 
 
