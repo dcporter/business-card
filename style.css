@@ -153,6 +153,9 @@ Springboard & title bar
   -webkit-transform: translateZ(0);
   -ms-transform: translateZ(0);
   transform: translateZ(0);
+  /*hiding springboard*/
+  display: none;
+  /*end hiding springboard*/
 }
 
 #springboard-title-wrapper {
@@ -543,6 +546,11 @@ Springboard background
 .app-context {
   top: 0; bottom: 0; left: 0; right: 0;
   padding-top: 60px;
+
+  /*hiding springboard*/
+  padding-top: 0px;
+  /*end hiding springboard*/
+
   -webkit-transform-origin: center top;
   -ms-transform-origin: center top;
   transform-origin: center center;
@@ -562,5 +570,8 @@ Springboard background
 @media all and (max-width: 400px), all and (max-height: 410px)  {
   .app-context {
     padding-top: 45px;
+    /*hiding springboard*/
+    padding-top: 0px;
+    /*end hiding springboard*/
   }
 }

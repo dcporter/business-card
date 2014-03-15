@@ -224,9 +224,9 @@ function setState() {
 // --------------------------------
 // Card height calculations
 //
-// Card height is calculated manually (rather than using top: x; bottom: x) for performance reasons. The height of the
-// card is the height of the window minus the header height (a known value), minus the collapsed springboard height. We
-// can observe the window height, and handle window size events.
+// Card height is calculated manually (rather than using top: x; bottom: x) to get accelerated animations. The height of
+// the card is the height of the window minus the header height (a known value), minus the collapsed springboard height.
+// We can observe the window height, and handle window size events.
 
 var windowHeight = window.innerHeight,
     springboard = new MVCObject(),
@@ -239,7 +239,8 @@ var windowHeight = window.innerHeight,
 springboard.headerPadding = 0;
 springboard.headerPadding_changed = function() { calculateCardHeight() };
 
-// This matches the card padding value here to the @media-queried CSS ones.
+// This matches the padding above and below the card here to the @media-queried
+// CSS ones.
 function calculateCardPadding() {
   if (windowHeight > 500) cardPadding = 20;
   else if (windowHeight > 410) cardPadding = 15;
@@ -268,7 +269,11 @@ function calculateCardHeight() {
   // Based on window height, get the correct header offset.
   var currentHeaderHeight = windowHeight <= 350 ? headerHeightNarrow : headerHeight;
   // The card height is the height of the window, less the current header height, springboard height, and current card padding.
-  cardHeight = parseInt(windowHeight - currentHeaderHeight - springboard.get('headerPadding') - (2 * cardPadding));
+  cardHeight = windowHeight
+             // - springboard.get('headerPadding') // hiding springboard
+             - currentHeaderHeight
+             - (2 * cardPadding);
+  cardHeight = parseInt(cardHeight, 10);
 
   // Apply it to the active card, if any.
   if (currentCard) {
