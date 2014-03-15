@@ -384,6 +384,16 @@ function fetchRepos() {
 setInterval(fetchRepos, 5800000);
 fetchRepos();
 
+// (HACK: Real quick, let's tweak moment's time english to prevent "...in the last a month" bug.)
+(function() {
+  var english = moment.langData('en').relativeTime;
+  english.m = 'minute';
+  english.h = 'hour';
+  english.d = 'day';
+  english.M = 'month';
+  english.y = 'year';
+})();
+
 function compileGithubActivity() {
   // Gatekeep.
   if (repos === null) return;
