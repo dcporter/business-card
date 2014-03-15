@@ -264,13 +264,19 @@ function compileTweets() {
 
 // User data
 var errorGithubUserData = {
+  github_user_name: '(api error)',
+  github_gravatar_id: '',
   github_repo_count: '(api error)',
   github_followers: '(api error)',
   github_following: '(api error)'
 };
+var githubApiHeaders = {
+  'User-Agent': '[Bussiness Card](https://www.github.com/dcporter/business-card)'
+};
 https.get({
   hostname: 'api.github.com',
-  path: '/users/%@'.fmt(process.env.GITHUB_USER_NAME) 
+  path: '/users/%@'.fmt(process.env.GITHUB_USER_NAME),
+  headers: githubApiHeaders
 }, function(response) {
   var output = '';
   response.on('data', function(chunk) { output += chunk; });
@@ -279,6 +285,7 @@ https.get({
       var data = JSON.parse(output);
       githubUserData = {
         github_user_name: process.env.GITHUB_USER_NAME,
+        github_gravatar_id: data.gravatar_id,
         github_repo_count: data.public_repos,
         github_followers: data.followers,
         github_following: data.following
@@ -296,7 +303,8 @@ https.get({
 // Starred list
 https.get({
   hostname: 'api.github.com',
-  path: '/users/%@/starred'.fmt(process.env.GITHUB_USER_NAME)
+  path: '/users/%@/starred'.fmt(process.env.GITHUB_USER_NAME),
+  headers: githubApiHeaders
 }, function(response) {
   var output = '';
   response.on('data', function(chunk) { output += chunk; });
@@ -314,49 +322,35 @@ https.get({
   compileClient();
 });
 
-var githubActivityRaw, githubActivityRaw2;
+var githubActivityRaw = [],
+    githubActivityPages = 4;
+function refreshOnePageOfGithubActivity(page) {
+  var i = page - 1;
+  https.get({
+    hostname: 'api.github.com',
+    path: '/users/%@/events/public?page=%@'.fmt(process.env.GITHUB_USER_NAME, page),
+    headers: githubApiHeaders
+  }, function(response) {
+    var output = '';
+    response.on('data', function(chunk) { output += chunk; });
+    response.on('end', function() {
+      if (githubActivityRaw[i] !== output) {
+        githubActivityRaw[i] = output;
+        compileGithubActivity();
+      }
+    });
+  }).on('error', function(err) {
+    // If we don't already have a valid activity value then we have to create one and move on with our lives.
+    if (!githubActivityRaw[i]) {
+      githubActivityRaw[i] = '[]';
+      compileGithubActivity();      
+    }
+  });
+}
 function refreshGithubActivity() {
-  // Page 1.
-  https.get({
-    hostname: 'api.github.com',
-    path: '/users/%@/events/public'.fmt(process.env.GITHUB_USER_NAME)
-  }, function(response) {
-    var output = '';
-    response.on('data', function(chunk) { output += chunk; });
-    response.on('end', function() {
-      if (githubActivityRaw !== output) {
-        githubActivityRaw = output;
-        if (githubActivityRaw2) compileGithubActivity();
-      }
-    });
-  }).on('error', function(err) {
-    // If we don't already have a valid activity value then we have to create one and move on with our lives.
-    if (!githubActivityRaw) {
-      githubActivityRaw = '[]';
-      if (githubActivityRaw2) compileGithubActivity();      
-    }
-  });
-  // Page 2.
-  https.get({
-    hostname: 'api.github.com',
-    path: '/users/%@/events/public?page=2'.fmt(process.env.GITHUB_USER_NAME)
-  }, function(response) {
-    var output = '';
-    response.on('data', function(chunk) { output += chunk; });
-    response.on('end', function() {
-      if (githubActivityRaw2 !== output) {
-        githubActivityRaw2 = output;
-        if (githubActivityRaw) compileGithubActivity();
-      }
-    });
-  }).on('error', function(err) {
-    // If we don't already have a valid activity value then we have to create one and move on with our lives.
-    if (!githubActivityRaw2) {
-      githubActivityRaw2 = '[]';
-      if (githubActivityRaw) compileGithubActivity();      
-    }
-  });
-
+  for (var i = 1; i <= githubActivityPages; i++) {
+    refreshOnePageOfGithubActivity(i);
+  }
 }
 setInterval(refreshGithubActivity, 3000000);
 refreshGithubActivity();
@@ -392,19 +386,18 @@ fetchRepos();
 
 function compileGithubActivity() {
   // Gatekeep.
-  if (githubActivityRaw === null || githubActivityRaw2 === null || repos === null) return;
+  if (repos === null) return;
+  for (var i = 0; i < githubActivityPages; i++) {
+    if (!githubActivityRaw[i]) return;
+  }
+
   // Parse github activity.
-  var githubActivity;
-  try {
-    githubActivity = JSON.parse(githubActivityRaw);
+  var githubActivity = [];
+  for (var i = 0; i < githubActivityPages; i++) {
+    try {
+      githubActivity = githubActivity.concat(JSON.parse(githubActivityRaw[i]));
+    } catch (e) {}
   }
-  catch (e) {
-    githubActivity = [];
-  }
-  try {
-    githubActivity = githubActivity.concat(JSON.parse(githubActivityRaw2));
-  }
-  catch(e) {}
 
   // Clear github activity logs.
   var i, len = repos.length;
@@ -434,7 +427,7 @@ function compileGithubActivity() {
 
     // Grab this as the oldest date. Since they arrive in chrono order, this'll be overwritten if it's wrong.
     oldestDateStr = item.created_at;
-    
+
     // Mark this item as the repo's oldest. Ibid.
     repo.oldestActivity = item;
 
