@@ -1,0 +1,29 @@
+#app-context-about {
+  background-color: #faa;
+  overflow: auto;
+}
+
+.about-wrapper {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.static * {
+  position: static;
+}
+
+.about-subheader {
+  text-decoration: underline;
+  margin-top: 10px;
+}
+
+.about-todo-list {
+  text-align: left;
+  width: 90%;
+  max-width: 450px;
+  display: inline-block;
+  margin-top: 5px;
+}
+.about-todo-list > li {
+  margin-bottom: 5px;
+}

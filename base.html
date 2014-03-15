@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>dcporter.net</title>
+    <!-- Note that the style's MD5 hash is used for caching & version control, not for any validation. -->
+    <link rel="stylesheet" type="text/css" href="/style.css?hash=%{style_hash}">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+    <!--<script type="text/javascript" src="/resources/jquery-min.js"></script>-->
+    <script src="//platform.twitter.com/widgets.js"></script>
+    <script type="text/javascript" src="/resources/browser.js">
+      // Browser detection, courtesy of SproutCore. Remember kids, don't do browser detection at home: steal it
+      // from an open-source project that went and figured out all the annoying tricks and gotchyas.
+    </script>
+    <script type="text/javascript" src="/resources/hammer-0.6.4.js">
+      // Hammer.js - the current best-in-class multitouch library. I've included the jQuery plugin extension as well.
+    </script>
+    <!-- currently unused.
+    <script type="text/javascript" src="/resources/state-machine.min.js">
+      // Jake Gordon's lean, mean JavaScript State Machine.
+      //
+      // https://github.com/jakesgordon/javascript-state-machine
+    </script>
+    -->
+    <script type="text/javascript" src="/resources/MVCObject-source-0.20.js">
+      // A KVO (Key Value Observer) implementation based on the one buried in the Google Maps API.
+      //
+      // KVO allows objects to get updates on each other's values without having to know details about
+      // each other. It's key to the MVC pattern, but it's useful damn near anywhere.
+      //
+      // http://code.google.com/p/mvcobject-js/
+    </script>
+    <script type="text/javascript" src="/resources/moment-1.7.2.min.js">
+      // Moment: A stupendous JavaScript Date/Time library, courtesy of Tim Wood and available at momentjs.com.
+    </script>
+    <script id="GA" type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-37454457-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+    <script id="DidYouMeanJS" type="text/javascript" src="/resources/didYouMean-1.1.0.min.js">
+      // didYouMean.js - a simple JavaScript matching engine.
+      //
+      // https://github.com/dcporter/didyoumean.js
+    </script>
+    <script id="ResponsiveJS" type="text/javascript" src="/resources/jRespond-1.0.0.min.js">
+      // jRespond - a library for managing the JS side responsive design.
+      //
+      // https://github.com/dcporter/jrespond
+    </script>
+  </head>
+
+  <body ontouchmove="event.preventDefault()"><!-- Preventing ontouchmove default keeps our body from scrolling at all on touch devices. TODO: Use addEventListener. -->
+    <div id="app-pane"></div>
+    <div id="springboard">
+      <div id="springboard-title-wrapper" class="initial"><div id="springboard-title"><a href="/" class="internal unprocessed">dcporter.net</a></div></div>
+      <a href="/" class="springboard-icon-wrapper springboard-icon-home icon-index-0 initial internal unprocessed">
+        <div class="springboard-icon-label springboard-icon-home">Home</div>
+        <div class="springboard-icon springboard-icon-home"></div>
+      </a>
+
+%{springboard}
+
+    </div>
+    <script id="platform" type="text/javascript">
+
+// Utils. Yeah, there are better ways to do this.
+try {
+  String.prototype.fmt = %{utils_fmt};
+} catch (e) {
+  // TODO: Something useful.
+}
+
+
+// Add browser-specific classes to body.
+$('body').addClass('%@ %@ %@'.fmt(SC.browser.current, SC.browser.device, SC.browser.engine));
+
+// Add touch detection to SC.browser, and apply it.
+SC.browser.touch = 'ontouchstart' in window || SC.browser.name === SC.BROWSER.android;
+if (SC.browser.touch) {
+  $('body').addClass('touch');
+}
+
+// Scroll the Mobile Safari address bar up out of sight.
+function hideAddressBar() {
+  window.scrollTo(0, 0);
+}
+window.addEventListener('orientationchange', hideAddressBar);
+hideAddressBar();
+
+
+// Namespace.
+var DCP = {};
+
+
+// This controller manages launching apps and broadcasting when they've launched.
+DCP.appManager = (function() {
+  // The appManager is returned as the public object; inside the scope, the beacon is used to track apps
+  var appManager = new MVCObject,
+      beacon = new MVCObject;
+
+  appManager.activeApp = undefined;
+  appManager.launchingApp = undefined;
+
+  // Quits any active apps and returns to the springboard. (Maybe this needs a better name - appManager shouldn't
+  // know anything about the springboard.)
+  appManager.goHome = function() {
+    // If we're already null, nothing to do.
+    if (this.get('launchingApp') === null) return;
+
+    // Alert app that it is being quitted.
+    var app = this.get('activeApp');
+    if (app) {
+      app.quit();
+    }
+
+    // Go home.
+    this.set('launchingApp', null);
+  }
+
+  // Launch the app.
+  appManager.launchApp = function(appId) {
+    // Get & verify app.
+    var app = DCP.apps[appId];
+    if (!app) throw new Error('App "%@" not found.'.fmt(appId));
+
+    // If this app is already launching or launched, there's nothing to do.
+    if (this.get('launchingApp') === app) return;
+
+    // If there's a previous app, notify it that it's quitting.
+    var previousApp = this.get('activeApp');
+    if (previousApp) {
+      previousApp.quit();
+    }
+
+    // Set the app locally, and get it launching.
+    this.set('launchingApp', app);
+    app.launch();
+  }
+
+  // The beacon is in charge of watching the app's external flags and promoting it from launching to launched.
+  beacon.launchingApp = null;
+  beacon.appIsReady = null;
+
+  // Bind the beacon's launchingApp property to the public app manager's.
+  beacon.bindTo('launchingApp', appManager);
+
+  // When the launching app changes, if it's already launched, promote it immediately. Otherwise
+  // set up observing on the new app.
+  beacon.launchingApp_changed = function() {
+    // Unbind previous app's isReady flag.
+    this.unbind('appIsReady');
+    // Get and verify app.
+    var app = this.get('launchingApp');
+    // If the app is already launched (or if there is no app and we're going home), handle it immediately.
+    if (!app || app.get('isReady')) {
+      this.appIsReady_changed();
+    }
+    // Otherwise, set up observing.
+    else {
+      this.bindTo('appIsReady', app, 'isReady');
+    }
+  }
+
+  // When an app is present and its isReady flag flips to true, promote it to active.
+  beacon.appIsReady_changed = function() {
+    var app = this.get('launchingApp'),
+        isReady = app ? app.get('isReady') : false,
+        appId = app ? app.get('id') : '',
+        appUrl = '/' + appId;
+    // If there's no app (going home) or the app is ready, promote it.
+    if (!app || isReady) {
+      appManager.set('activeApp', appManager.get('launchingApp'));
+      // If the app
+      if (appUrl !== window.location.pathname.substr(0, appUrl.length)) window.history.pushState(null, null, appUrl);
+      else if (appUrl === '/' && window.location.pathname !== '/') window.history.pushState(null, null, appUrl);
+    }
+  }
+
+  // Return the public object.
+  return appManager;
+})();
+
+
+// Define the App class.
+DCP.App = function(config) {
+  // Protect against new-fail.
+  if (!(this instanceof DCP.App)) return new DCP.App(config);
+
+  // Transfer config values. TODO: validate in any way whatsoever.
+  var key;
+  for (key in config) {
+    this[key] = config[key];
+  }
+
+  // Set properties.
+  this.isLoading = false;
+  this.isCSSLoaded = false;
+  this.isJSLoaded = false;
+  this.isHTMLLoaded = false;
+  this.isLoaded = false;
+  this.isReady = false;
+  this.hasEverLaunched = false;
+
+  this.html = null;
+  this.context = null;
+  this.style = null;
+
+};
+
+DCP.App.prototype = new MVCObject;
+DCP.App.prototype.constructor = DCP.App;
+
+/*
+App#launch tests the app for loadedness, makes sure it's the currently active app, and then launches it.
+
+My original plan for this was to have the client code replace app.launch when loaded, but that
+could cause the app to launch without its CSS in the case where the user launched this app,
+triggering load, then launched another app and re-launched this one between when the client and
+the CSS loaded. 
+*/
+DCP.App.prototype.launch = function() {
+  // If we're mid-load, there's nothing for us to do here.
+  if (this.get('isLoading')) return;
+  // If we're not loaded yet, trigger loading.
+  if (!this.get('isLoaded')) {
+    this.load();
+    return;
+  }
+  // Before launching, make sure we're still the active app.
+  if (this !== DCP.appManager.get('launchingApp')) return;
+  // Initialize the context, if needed.
+  if (!this.get('context')) {
+    var context = DCP.appPane.getContextForApp(this.id);
+    this.initializeContext(context);
+    this.set('context', context);
+  }
+  // Launch the client!
+  this.launchClient(!this.hasEverLaunched);
+  this.set('hasEverLaunched', true);
+};
+
+/*
+  App#load loads the app's html, js and stylesheet. It uses XMLHttpRequest to allow
+  us to easily monitor and control load status and execution.
+
+  The URI for each item is /app/:app-id/:file-request?hash=:file-hash
+    :app-id, the app's ID via app.get('id')
+    :file-request is "style.css", "client.js" or "index.html".
+    :file-hash, the file's MD5 hash. No validation is done on this value; it's used for version control only.
+*/
+DCP.App.prototype.load = function() {
+  // Gatekeep: if we're loaded, or mid-load, there's nothing to do.
+  if (this.get('isLoading') || this.get('isLoaded')) return;
+
+  var self = this,
+      cssReq, jsReq, htmlReq;
+
+  // Completion tester.
+  function finishLoad() {
+    // Make sure both requests have complete.
+    if (!self.get('isCSSLoaded') || !self.get('isJSLoaded') || !self.get('isHTMLLoaded')) return;
+    // Trigger launch (launch checks to see if we're still the launching app.)
+    self.set('isLoading', false);
+    self.set('isLoaded', true);
+    self.launch();
+    // Finish cleaning up the closure.
+    testLoaded = self = null;
+  }
+
+  // CSS
+  cssReq = new XMLHttpRequest;
+  cssReq.open('GET', '/app/%@/style.css?hash=%@'.fmt(this.get('id'), this.get('styleHash')));
+  cssReq.onreadystatechange = function() {
+    // Gatekeep: not ready yet.
+    if (this.readyState !== this.DONE) return;
+    // Create style node.
+    var style = document.createElement('style');
+    style.type = 'text/css';
+    // Fill style node with css.
+    if (style.styleSheet) {
+      style.styleSheet.cssText = this.responseText;
+    } else {
+      style.appendChild(document.createTextNode(this.responseText));
+    }
+    // Append stylesheet.
+    document.getElementsByTagName('head')[0].appendChild(style);
+    // Mark complete.
+    self.set('isCSSLoaded', true);
+    // Test for complete.
+    finishLoad();
+  };
+  cssReq.send();
+  // The request will know itself and retain access to this closure. No need to retain a named reference to
+  // it too.
+  cssReq = null;
+
+  // JS
+  jsReq = new XMLHttpRequest;
+  jsReq.open('GET', '/app/%@/client.js?hash=%@'.fmt(this.get('id'), this.get('clientHash')));
+  jsReq.onreadystatechange = function() {
+    // Gatekeep: not ready yet.
+    if (this.readyState !== this.DONE) return;
+    // Create enclosed script string. TODO: Secure this kinda gaping security hole.
+    var enclosedScript = '(function(app){ %@ })(DCP.apps[\'%@\']);'.fmt(this.responseText, self.get('id'));
+    // Create and populate script node.
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.text = enclosedScript;
+    // Append the script element. This runs the script before moving on, guaranteeing initialization. (:D)
+    document.getElementsByTagName('head')[0].appendChild(script);
+    // Mark complete.
+    self.set('isJSLoaded', true);
+    // Test for complete.
+    finishLoad();
+  };
+  jsReq.send();
+  // The request will know itself and retain access to this closure. No need to retain a named reference to
+  // it too.
+  jsReq = null;
+
+  // HTML
+  htmlReq = new XMLHttpRequest;
+  htmlReq.open('GET', '/app/%@/index.html?hash=%@'.fmt(this.get('id'), this.get('htmlHash')));
+  htmlReq.onreadystatechange = function() {
+    // Gatekeep: not ready yet.
+    if (this.readyState !== this.DONE) return;
+    // Process HTML response.
+    var html = this.responseText || '';
+    html = html.fmt({ touch: SC.browser.touch ? 'touch' : ' ' });
+    self.set('html', html);
+    self.set('isHTMLLoaded', true);
+    finishLoad();
+  };
+  htmlReq.send();
+  // The request will know itself and retain access to this closure. No need to retain a named reference to
+  // it too.
+  htmlReq = null;
+};
+
+/*
+App#initializeContext: this method is replaced by the client when loaded. The default implementation loads
+the app's HTML into the context. Override this to do ... anything else you want.
+*/
+DCP.App.prototype.initializeContext = function(context) {
+  var html = this.get('html'),
+      appId = this.get('id');
+  try {
+    context.html(html);
+    DCP.internalLinkerate(context);
+  } catch (e) {
+    // TODO: Something useful.
+    console.log('App "%@" context failed to initialize:'.fmt(this.get('id')));
+    console.log(e);
+  }
+}
+
+/*
+App#launchClient: The default implementation simply sets isReady on the client. Override this method
+to attach any event handlers, kick off any update timers, et cetera. You must set isReady to true at the
+end of your override. Anything that causes code to run or requires your context to be active should be
+turned off at quit. You can run any code that requires the context to be attached to the DOM after you
+set isReady.
+This method is passed a single boolean argument indicating whether it is the first time the app has
+launched.
+TODO: Clean up this documentation.
+*/
+DCP.App.prototype.launchClient = function(firstTime) {
+  this.set('isReady', true);
+};
+
+/*
+App#pathname: Returns the current sub-path for the app. For example, if the current path is
+"/app-id/subpath/sub-subpath" then this method will return "subpath/sub-subpath". If the path
+is at the root of the app, this method returns ''. If the app is not currently active, then this
+method returns null.
+*/
+DCP.App.prototype.pathname = function() {
+  var pathname = window.location.pathname,
+      appRoot = '/%@'.fmt(this.id),
+      appRootSlash = appRoot + '/';
+  
+  // Fast path: at root of app. (Otherwise dealing with /app-id and /app-id/ becomes annoying, especially
+  // in cases like where the app ID is "me" and the pathname is "/melt/". So let's get rid of this case
+  // first.
+  if (pathname === appRoot) return '';
+
+  // Fast path: app not active.
+  if (pathname.substr(0, appRootSlash.length) !== appRootSlash) return null;
+
+  // Get rid of the app root and return the remainder.
+  return pathname.substr(appRootSlash.length);
+}
+
+/*
+App#onpopstate: When a state pops within an app, the onpopstate method is called. The default
+implementation does nothing. Override this to handle state changes via browser nav buttons.
+*/
+DCP.App.prototype.onpopstate = function() {};
+
+/*
+App#quit: quits the app. Override this method to turn off anything that was turned on in launchClient.
+*/
+DCP.App.prototype.quit = function() {
+  this.set('isReady', false);
+};
+
+
+// Handles swapping app contexts into the app pane.
+DCP.appPane = (function() {
+  var $el = $('#app-pane'),
+      wrappers = {},
+      priorContext = null,
+      currentContext = null;
+
+  // Expose a centralized method for generating app contexts.
+  var appPane = {
+    getContextForApp: function(appId) {
+      return $('<div class="app-context" id="app-context-%@"></div>'.fmt(appId));
+    }
+  };
+
+  // The beacon is used to watch the active app's context. When the active app changes,
+  // activate its context. (Beacons probably aren't the best pattern, but it's a way to
+  // observe things that you don't want to expose outside of the scope.)
+  var beacon = new MVCObject;
+  beacon.activeApp = null
+  beacon.bindTo('activeApp', DCP.appManager);
+
+  // For now we're assuming that its context will be present and will not change. (Stuff inside
+  // it will of course change, but we don't care about that here.)
+  beacon.activeApp_changed = function() {
+    var app = this.get('activeApp'),
+        newContext = app ? app.get('context') : DCP.springboard.get('context');
+
+    // Nothing to do if we're switching to the same context.
+    if (newContext === currentContext) return;
+
+    // Demote previous context, if present.
+    priorContext = currentContext;
+    if (priorContext) {
+      // Set a timer to get rid of the context after it fades out.
+      var fadeoutDuration = app && app.get('fadeoutTimer') ? app.get('fadeoutTimer') : 1000,
+          now = new Date,
+          removeAfter = now.setMilliseconds(now.getMilliseconds() + fadeoutDuration);
+      priorContext.attr('data-okay-to-remove-at', removeAfter.valueOf());
+      setTimeout(destructoTimer, 1000);
+    }
+
+    // Make sure the new context isn't already active.
+    currentContext = newContext;
+    currentContext.removeClass('active').addClass('inactive');
+    // Append it.
+    $el.append(currentContext);
+
+    // Make sure nobody is going to remove it.
+    currentContext.removeAttr('data-okay-to-remove-at');
+
+    // In a just a sec, activate it.
+    // TODO: Delaying activation until 100ms after the context is appended gives the browser a chance to finish
+    // dealing with all the new DOM and greatly smooths out the launch animation for DOM-heavy apps. The challenge
+    // is syncing this up with the springboard, for example.
+    setTimeout(activateInJustASec, 1);
+
+  };
+
+  function activateInJustASec() {
+    if (priorContext) priorContext.removeClass('active').addClass('inactive');
+    currentContext.removeClass('inactive').addClass('active');
+  }
+
+  function destructoTimer() {
+    // Loop through current app contexts. Remove any that should be removed.
+    var i, kid, time,
+        now = new Date,
+        anyLeft = false,
+        kids = $el.children(),
+        len = kids.length;
+    
+    for (i = len - 1; i >= 0; i--) {
+      kid = kids[i];
+      if (!kid || isNaN(kid.dataset.okayToRemoveAt)) continue;
+      time = new Date(parseInt(kid.dataset.okayToRemoveAt));
+      if (time <= now) {
+        $(kid).detach();
+      } else {
+        anyLeft = true;
+      }
+    }
+
+    // If there are any left, call this sucker again in a second. TODO: Actually schedule this for when the next
+    // context expires.
+    if (anyLeft) {
+      setTimeout(destructoTimer, 1000);
+    }
+  }
+
+  return appPane;
+})();
+
+
+// The site header.
+DCP.springboard = (function() {
+  // Elements.
+  var selector = '#springboard,#springboard-background,#springboard-title-wrapper,.springboard-icon-wrapper',
+      $els = $(selector),
+      $title = $els.find('#springboard-title > a'),
+      sb = new MVCObject; // DCP.springboard = sb
+
+  /* 
+    States:
+      - open-5 (header open, wide screen) (tall & short versions)
+        - app icons 5 across
+        - no home button
+        - title large and centered
+      - open-3 (header open, narrow screen) (tall & short versions)
+        - app icons 3/2
+        - no home button
+        - title large and centered
+      - closed-bar (header collapsed, wide and tall screen)
+        - app icons small across the top with home button
+        - title gone
+      - closed-title (header collapsed, narrow or short screen)
+        - app icons gone
+        - title small at top
+  */
+
+  // When collapsed to the top of the screen, the springboard requires that apps give it space. These expose how much.
+  sb.HEADER_PADDING_NORMAL = 60;
+  sb.HEADER_PADDING_SMALL = 45;
+
+  // State change callback. Run it once to kick off the thing.
+  function stateDidChange() {
+    var headerState = $.respondCurrentState('header-width'),
+        heightState = $.respondCurrentState('height');
+    if (headerState === 'title' || heightState === 'short') {
+      sb.set('headerPadding', sb.HEADER_PADDING_SMALL);
+      sb.set('isCollapsed', true);
+      $title.attr('href', '/');
+    }
+    else {
+      sb.set('headerPadding', sb.HEADER_PADDING_NORMAL);
+      sb.set('isCollapsed', false);
+      $title.attr('href', '');
+    }
+  }
+
+  // Add the appropriate window size responders.
+  $.respondToHeights('height', ['short', 'tall'], [410], stateDidChange);
+  $.respondToWidths('header-width', ['title', 'icons'], [400], stateDidChange);
+
+  // Populate DCP.springboard. Bind it into DCP.appManager.
+  sb.activeApp = undefined;
+  sb.activeApp_changed = function() {
+    if (this.get('activeApp')) $els.removeClass('open').addClass('collapsed');
+    else $els.removeClass('collapsed').addClass('open');
+  };
+  sb.bindTo('activeApp', DCP.appManager);
+
+  // The springboard UI action. Lets the app manager know what app was requested.
+  sb.action = function(evt) {
+    // Gatekeep. If there's no event, no dataset or no app data on the element, we've got
+    // nothing to do.
+    var target = evt ? evt.target || evt.srcElement : null;
+    if (!target || target.dataset.app === undefined) return;
+    var appId = target.dataset.app;
+    if (appId) DCP.appManager.launchApp(appId);
+    else DCP.appManager.goHome();
+  };
+
+  sb.context = DCP.appPane.getContextForApp('springboard');
+  sb.context.html('<div id="springboard-background-image"></div><div id="springboard-background-gradient"></div>');
+
+  // Initialize!
+  // TODO: Implement a mechanism for delaying initialization until everything's in place.
+  stateDidChange();
+  $els.removeClass('initial');
+
+  return sb;
+})();
+
+// This sets up internal links. Optionally, pass in an element, $element or selector to be used as
+// the root of the search. (This prevents this method from traversing the entire DOM every time it's
+// called.)
+DCP.internalLinkerate = function(rootEl) {
+  // Normalize.
+  var root;
+  if (!rootEl) root = $('body');
+  else root = $(rootEl);
+  if (!root.length) return;
+  // Get unprocessed anchors.
+  var anchors = root.find('a.internal.unprocessed');
+  // Process!
+  var i, anchor, len = anchors.length;
+  for (i = 0; i < len; i++) {
+    anchor = $(anchors[i]);
+    if (SC.browser.touch) {
+      anchor.hammer({ prevent_default: true }).bind('tap', DCP.internalLinkHandler);
+      if (anchor.hasClass('drag-down')) anchor.hammer({ prevent_default: true }).bind('drag', DCP.internalLinkDragDownHandler);
+    }
+    anchor.bind('click', DCP.internalLinkHandler);
+    // Note: We're including click events even on touch browsers because hammer's tap calculations are slightly different
+    // at the margins than Mobile Safari's. Including the click handler means that even if the user's tap misses hammer's
+    // "tap" zone and triggers a native click event, our internal link handler still get to deal with it. (Try removing this
+    // and then tapping near, but not quite on, a link.)
+  }
+  anchors.removeClass('unprocessed');
+}
+DCP.internalLinkHandler = function(evt) {
+  DCP.internalLinkHandler.hasRun = true; // ehhhhh...
+  // Gatekeep.
+  var href = evt && evt.currentTarget ? evt.currentTarget.href : null;
+  if (!href) return;
+  // If it's a new location, go to it.
+  if (href !== window.location.href) {
+    window.history.pushState(null, null, href);
+    _gaq.push(['_trackPageview']);
+  }
+  // Either way, alert the people. (Apps must be able to handle repeat invocations of the same URL.)
+  DCP.didPopState();
+  // Keep the browser's paws off.
+  evt.preventDefault();
+}
+DCP.internalLinkDragDownHandler = function(evt) {
+  if (evt && evt.direction === 'down' && evt.distance >= 10) {
+    DCP.internalLinkHandler(evt);
+  }
+}
+
+// Loads the apps!
+DCP.apps = (function() {
+  // Get manifest. (Wrapped in case something went pear-shaped on the server.)
+  var manifest;
+  try {
+    manifest = %{app_manifest};
+  } catch (e) {
+    // TODO: Something useful.
+  }
+
+  // Prepare & populate apps object.
+  var ret = { index: [] }, // I think I may have misnamed the index...
+      app,
+      len = manifest.length,
+      i, key;
+  for (i = 0; i < len; i++) {
+    app = new DCP.App(manifest[i]);
+    ret.index.push(app);
+    ret[app.id] = app;
+  }
+  // Clean up the closure. Maybe a closure shouldn't be used here?
+  manifest = app = len = i = null;
+  return ret;
+})();
+
+    </script>
+
+
+    <!-- The preloaded app stylesheet, if present. -->
+    <style id="app-css-preload" type="text/css">
+
+%{app_style}
+
+    </style>
+
+    <!-- The preloaded html (in text form), if present. -->
+    <script id="app-html-preload" type="text/javascript">/*%{app_html}*/</script>
+
+    <!-- The preloaded app code, if present. -->
+    <script id="app-js-preload" type="text/javascript">
+
+// The app preload code gets its own script tag to protect the rest of the page (especially the "finally" script)
+// from any serverside foulups. It also gets its own closures to help protect the global scope.
+
+// Preloaded app client code.
+(function(app) {
+
+%{app_code};
+
+})(DCP.apps['%{app_id}']);
+
+// Preloaded app data.
+(function(app) {
+if (app) {
+  app.preloadData = %{app_data};
+}
+
+})(DCP.apps['%{app_id}']);
+
+// Get the preloaded HTML. (If this gets too unwieldy, we should create a generic html processing method
+// somewhere. Currently this is duplicate code to App#load.)
+(function() {
+  var app = DCP.apps['%{app_id}'];
+  if (app) {
+    var $el = $('#app-html-preload'),
+        rawtext = $el.text(),
+        html = rawtext.substr(2, rawtext.length - 4);
+    html = decodeURI(html)
+    html = html.fmt({ touch: SC.browser.touch ? 'touch' : '' });
+    app.set('html', html);
+  }
+})();
+
+// Optimistically mark the preloaded app as preloaded.
+(function() {
+  var app = DCP.apps['%{app_id}'];
+  if (app) {
+    app.set('isCSSLoaded', true);
+    app.set('isJSLoaded', true);
+    app.set('isHTMLLoaded', true);
+    app.set('isLoaded', true);
+  }
+})();
+
+    </script>
+
+    <script id="finally" type="text/javascript">
+
+// Popstate handler.
+DCP.handledURL = null;
+DCP.didPopState = function(evt) {
+  // Gatekeep: Detect browser duplicate popstate events until the user has done her first bit of actual navigation. (By
+  // also checking for evt, we can call this method manually with no arguments and get it through. Hacky but effective.)
+  if (evt && !DCP.internalLinkHandler.hasRun && DCP.handledURL === window.location.href) return;
+  // Carry on.
+  DCP.handledURL = window.location.href;
+  var appId = window.location.pathname.split('/')[1] || '',
+      currentApp = DCP.appManager.get('activeApp'),
+      currentAppId = currentApp ? currentApp.get('id') : '';
+  // If we're popping states within the same app, tell the app's handler.
+  if (appId && appId === currentAppId) {
+    currentApp.onpopstate();
+  }
+  // If we're switching apps, launch the new one.
+  else if (appId) {
+    DCP.appManager.launchApp(appId);
+  }
+  // If there is no appId, we're goin home.
+  else {
+    DCP.appManager.goHome();
+  }
+  return true;
+};
+
+window.addEventListener('popstate', DCP.didPopState);
+DCP.didPopState();
+// Note that the above was called without an event. The method gatekeeps based on this nuance. No, I'm not proud of this. Yes, Firefox and WebKit need to figure their popstate-on-load thing the eff out.
+
+// Run the internal linkerator.
+DCP.internalLinkerate();
+
+/*
+  FOR FUTURE REFERENCE: Several of my background images come from http://freeseamlesstextures.com/.
+  What's this note doing here?
+*/
+
+    </script>
+
+  </body>
+</html>

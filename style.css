@@ -1,0 +1,566 @@
+html {
+  overflow-x: hidden;
+}
+
+body {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  min-width: 320px;
+  background-color: white;
+  margin: 0;
+  overflow: hidden;
+  font-family: 'PT Sans', 'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media screen and (orientation:landscape) {
+  body.touch {
+    min-height: 268px;
+  }
+}
+/* Special-case helper for older iPhones. */
+@media screen and (orientation:portrait) and (device-height: 480px) {
+  body.touch {
+    min-height: 416px;
+  }
+}
+/* Special-case helper for iPhone 5. */
+@media screen and (orientation:portrait) and (device-height: 568px) {
+  body.touch {
+    min-height: 504px;
+  }
+}
+
+/* On phones, this does what you want (no auto-text-zooming). On desktops it prevents desirable accessibility behavior. */
+body.touch {
+  -webkit-text-size-adjust: none;
+}
+
+/* This kind of thing is supposed to be a performance loss, but I'm not noticing anything, so fingers crossed. */
+body * {
+  position: absolute;
+}
+
+/* Quick positioning hacks for roughing out new apps. */
+.static {
+  position: static;
+}
+.app-header {
+  position: static;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Other app-wide element fix. */
+h1, h2, h3, h4, p, ul {
+  margin: 0;
+}
+a {
+  text-decoration: none;
+  color: #359;
+}
+body:not(.touch) a:not(.internal):hover {
+  text-decoration: underline;
+}
+a.internal {
+  color: black;
+  text-decoration: underline;
+}
+hr {
+  border: 0px solid transparent;
+  height: 1px;
+  background-color: lightgray;
+}
+
+.firefox .firefox-scroll-fix {
+  right: -14px; /* Scrollbar fix hack. */
+}
+
+
+/* Fonts of course courtesy of Google WebFonts. Hosted locally to avoid odd issues. */
+@font-face {
+  font-family: 'PT Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('PT Sans'), local('PTSans-Regular'), url('/resources/PTSans.woff') format('woff');
+}
+@font-face {
+  font-family: 'PT Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: local('PT Sans Italic'), local('PTSans-Italic'), url('/resources/PT Sans Italic.woff') format('woff');
+}
+@font-face {
+  font-family: 'PT Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: local('PT Sans Bold'), local('PTSans-Bold'), url('/resources/PT Sans Bold.woff') format('woff');
+}
+@font-face {
+  font-family: 'PT Sans Narrow';
+  font-style: normal;
+  font-weight: 400;
+  src: local('PT Sans Narrow'), local('PTSans-Narrow'), url('/resources/PT Sans Narrow.woff') format('woff');
+}
+@font-face {
+  font-family: 'PT Sans Caption';
+  font-style: normal;
+  font-weight: 400;
+  src: local('PT Sans Caption'), local('PTSans-Caption'), url('/resources/PT Sans Caption.woff') format('woff');
+}
+@font-face {
+  font-family: 'PT Sans Caption';
+  font-style: normal;
+  font-weight: 700;
+  src: local('PT Sans Caption Bold'), local('PTSans-CaptionBold'), url('/resources/PT Sans Caption Bold.woff') format('woff');
+}
+@font-face {
+  font-family: 'Crimson Text';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Crimson Text Italic'), local('CrimsonText-Italic'), url('/resources/Crimson Text Italic.woff') format('woff');
+}
+@font-face {
+  font-family: 'Crimson Text';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Crimson Text'), local('CrimsonText-Roman'), url('/resources/Crimson Text.woff') format('woff');
+}
+@font-face {
+  font-family: 'Crimson Text';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Crimson Text Bold'), local('CrimsonText-Bold'), url('/resources/Crimson Text Bold.woff') format('woff');
+}
+
+.caption {
+
+}
+.serif {
+  font-family: 'Crimson Text', 'Times New Roman', Times, serif;
+}
+
+/*
+
+Springboard & title bar
+
+*/
+
+#springboard {
+  width: 100%;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+#springboard-title-wrapper {
+  left: 0; right: 0;
+  text-align: center;
+}
+#springboard-title {
+  position: static;
+  display: inline-block;
+  cursor: default;
+  font-size: 3em;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-mask-image: -webkit-gradient(
+    linear, left top, left bottom,
+    from(rgba(255,255,255,0.45)),
+    color-stop(50%, rgba(255,255,255,0.25)),
+    to(rgba(255,255,255,0.9))
+  );
+}
+#springboard-title > a {
+  position: static;
+  cursor: default;
+  text-decoration: none;
+}
+
+/* Icon wrapper */
+.springboard-icon-wrapper {
+  left: 50%;
+}
+.springboard-icon-wrapper.open {
+  height: 80px; width: 80px;
+}
+.springboard-icon-wrapper.collapsed {
+  height: 45px; width: 45px;
+}
+
+/* Icon itself */
+.springboard-icon {
+  border-radius: 5px;
+  border: 1px solid black;
+  cursor: pointer;
+  height: 100px; width: 100px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+  -webkit-transform-origin: top left;
+  -ms-transform-origin: top left;
+  transform-origin: top left;
+  -webkit-transform: scale(0.8) translateZ(0);
+  -ms-transform: scale(0.8) translateZ(0);
+  transform: scale(0.8) translateZ(0);
+  -webkit-transition: -webkit-transform 0.2s ease-out;
+  transition: transform 60ms ease-out;
+}
+
+.springboard-icon-wrapper.collapsed > .springboard-icon {
+  -webkit-transform: scale(0.45) translateZ(0);
+  -ms-transform: scale(0.45) translateZ(0);
+  transform: scale(0.45) translateZ(0);
+}
+
+/* Icon label */
+.springboard-icon-label {
+  left: 0px; right: 0px; height: 24px; top: 88px;
+  text-align: center;
+  font-size: 0.95em;
+  line-height: 1.2em;
+  font-weight: bold;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  -webkit-transition: opacity 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.springboard-icon-wrapper.collapsed > .springboard-icon-label {
+  opacity: 0;
+  top: 0px;
+  cursor: default;
+}
+
+/* App icons */
+.springboard-icon.springboard-icon-home {
+  background-color: white;
+  background-image: url('/resources/icon-home.png');
+  background-size: 100% 100%;
+}
+.springboard-icon.springboard-icon-me {
+  background-color: white;
+  background-image: url('//www.gravatar.com/avatar/6b10c881ccf45a5c371080a29e5a817f?s=160');
+  background-position: center center;
+  background-size: 104% 104%;
+}
+.springboard-icon.springboard-icon-blog {
+  background-color: gold;
+  background-image: url('/resources/icon-sticky.jpeg');
+  background-size: 100% 100%;
+}
+.springboard-icon.springboard-icon-projects {
+  background-color: skyblue;
+}
+.springboard-icon.springboard-icon-sandbox {
+  background-color: darkkhaki;
+  background-size: 100% 100%;
+  background-image: url('/resources/icon-sandbox.jpeg');
+  /* Image from http://en.wikipedia.org/wiki/File:Zen_Garden.jpg - license at http://commons.wikimedia.org/wiki/GNU_Free_Documentation_License */
+}
+.springboard-icon.springboard-icon-about {
+  background-color: darkred;
+}
+
+/* Annoying invisible thing cursor fix */
+.springboard-icon-wrapper.icon-index-0.open > .springboard-icon, .springboard-icon-wrapper.icon-index-0.open > .springboard-icon-label {
+  cursor: default;
+}
+
+/*
+Icon animations
+*/
+#springboard, #springboard-title-wrapper, .springboard-icon-wrapper, .springboard-icon-label {
+  -webkit-transition-duration: 0.2s;
+  -webkit-transition-timing-function: ease-out;
+  -webkit-transition-property: -webkit-transform, opacity;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-out;
+  transition-property: transform, opacity;
+}
+
+/*
+  Icon metrics by index & state
+*/
+
+/* Initial */
+.springboard-icon-wrapper.initial {
+  opacity: 0;
+  -webkit-transform: scale(0.05) translateX(-40px) translateZ(0px);
+  -ms-transform: scale(0.05) translateX(-40px) translateZ(0px);
+  transform: scale(0.05) translateX(-40px) translateZ(0px);
+}
+.springboard-icon-wrapper.initial > .springboard-icon-label {
+  opacity: 0;
+}
+#springboard-title-wrapper.initial {
+  opacity: 0;
+  -webkit-transform: scale(0.5) translateY(-20px) translateZ(0px);
+  -ms-transform: scale(0.5) translateY(-20px) translateZ(0px);
+  transform: scale(0.5) translateY(-20px) translateZ(0px);
+}
+
+/* springboard wrapper handles height while open. */
+#springboard.open {
+  -webkit-transform: translateY(200px) translateZ(0);
+  -ms-transform: translateY(200px) translateZ(0);
+  transform: translateY(200px) translateZ(0);
+}
+@media all and (max-height: 600px) {
+  #springboard.open {
+    -webkit-transform: translateY(150px) translateZ(0);
+    -ms-transform: translateY(150px) translateZ(0);
+    transform: translateY(150px) translateZ(0);
+  }
+}
+@media all and (max-height: 500px) {
+  #springboard.open {
+    -webkit-transform: translateY(75px) translateZ(0);
+    -ms-transform: translateY(75px) translateZ(0);
+    transform: translateY(75px) translateZ(0);
+  }
+}
+@media all and (max-height: 400px) {
+  #springboard.open {
+    -webkit-transform: translateY(0px) translateZ(0);
+    -ms-transform: translateY(0px) translateZ(0);
+    transform: translateY(0px) translateZ(0);
+  }
+}
+
+
+/* open-5 (open wide) */
+.open#springboard-title-wrapper {
+  -webkit-transform: scale(1) translateY(20px) translateZ(0px);
+  -ms-transform: scale(1) translateY(20px) translateZ(0px);
+  transform: scale(1) translateY(20px) translateZ(0px);
+}
+.open.springboard-icon-wrapper.icon-index-0 {
+  -webkit-transform: translateX(-340px) translateY(110px) translateZ(0px);
+  -ms-transform: translateX(-340px) translateY(110px) translateZ(0px);
+  transform: translateX(-340px) translateY(110px) translateZ(0px);
+  opacity: 0; cursor: default;
+}
+.open.springboard-icon-wrapper.icon-index-1 {
+  -webkit-transform: translateX(-240px) translateY(110px) translateZ(0px);
+  -ms-transform: translateX(-240px) translateY(110px) translateZ(0px);
+  transform: translateX(-240px) translateY(110px) translateZ(0px);
+}
+.open.springboard-icon-wrapper.icon-index-2 {
+  -webkit-transform: translateX(-140px) translateY(110px) translateZ(0px);
+  -ms-transform: translateX(-140px) translateY(110px) translateZ(0px);
+  transform: translateX(-140px) translateY(110px) translateZ(0px);
+}
+.open.springboard-icon-wrapper.icon-index-3 {
+  -webkit-transform: translateX(-40px) translateY(110px) translateZ(0px);
+  -ms-transform: translateX(-40px) translateY(110px) translateZ(0px);
+  transform: translateX(-40px) translateY(110px) translateZ(0px);
+}
+.open.springboard-icon-wrapper.icon-index-4 {
+  -webkit-transform: translateX(60px) translateY(110px) translateZ(0px);
+  -ms-transform: translateX(60px) translateY(110px) translateZ(0px);
+  transform: translateX(60px) translateY(110px) translateZ(0px);
+}
+.open.springboard-icon-wrapper.icon-index-5 {
+  -webkit-transform: translateX(160px) translateY(110px) translateZ(0px);
+  -ms-transform: translateX(160px) translateY(110px) translateZ(0px);
+  transform: translateX(160px) translateY(110px) translateZ(0px);
+}
+
+/* open-3 (open narrow) */
+@media all and (max-width: 530px) {
+  .open#springboard-title-wrapper {
+    -webkit-transform: scale(1) translateY(0px) translateZ(0px);
+    -ms-transform: scale(1) translateY(0px) translateZ(0px);
+    transform: scale(1) translateY(0px) translateZ(0px);
+  }
+  .open.springboard-icon-wrapper.icon-index-0 {
+    -webkit-transform: translateX(-240px) translateY(70px) translateZ(0px);
+    -ms-transform: translateX(-240px) translateY(70px) translateZ(0px);
+    transform: translateX(-240px) translateY(70px) translateZ(0px);
+    opacity: 0;
+    cursor: default;
+  }
+  .open.springboard-icon-wrapper.icon-index-1 {
+    -webkit-transform: translateX(-140px) translateY(70px) translateZ(0px);
+    -ms-transform: translateX(-140px) translateY(70px) translateZ(0px);
+    transform: translateX(-140px) translateY(70px) translateZ(0px);
+  }
+  .open.springboard-icon-wrapper.icon-index-2 {
+    -webkit-transform: translateX(-40px) translateY(70px) translateZ(0px);
+    -ms-transform: translateX(-40px) translateY(70px) translateZ(0px);
+    transform: translateX(-40px) translateY(70px) translateZ(0px);
+  }
+  .open.springboard-icon-wrapper.icon-index-3 {
+    -webkit-transform: translateX(60px) translateY(70px) translateZ(0px);
+    -ms-transform: translateX(60px) translateY(70px) translateZ(0px);
+    transform: translateX(60px) translateY(70px) translateZ(0px);
+  }
+  .open.springboard-icon-wrapper.icon-index-4 {
+    -webkit-transform: translateX(-90px) translateY(185px) translateZ(0px);
+    -ms-transform: translateX(-90px) translateY(185px) translateZ(0px);
+    transform: translateX(-90px) translateY(180px) translateZ(0px);
+  }
+  .open.springboard-icon-wrapper.icon-index-5 {
+    -webkit-transform: translateX(10px) translateY(185px) translateZ(0px);
+    -ms-transform: translateX(10px) translateY(185px) translateZ(0px);
+    transform: translateX(10px) translateY(180px) translateZ(0px);
+  }
+}
+
+/* closed-bar (closed tall wide) */
+
+.collapsed#springboard-title-wrapper {
+  opacity: 0;
+  -webkit-transform: scale(.666) translateY(0px) translateZ(0px);
+  -ms-transform: scale(.666) translateY(0px) translateZ(0px);
+  transform: scale(.666) translateY(0px) translateZ(0px);
+}
+.collapsed.springboard-icon-wrapper.icon-index-0 {
+  opacity: 1;
+  -webkit-transform: translateX(-160px) translateY(5px) translateZ(0px);
+  -ms-transform: translateX(-160px) translateY(5px) translateZ(0px);
+  transform: translateX(-160px) translateY(5px) translateZ(0px);
+}
+.collapsed.springboard-icon-wrapper.icon-index-1 {
+  -webkit-transform: translateX(-105px) translateY(5px) translateZ(0px);
+  -ms-transform: translateX(-105px) translateY(5px) translateZ(0px);
+  transform: translateX(-105px) translateY(5px) translateZ(0px);
+}
+.collapsed.springboard-icon-wrapper.icon-index-2 {
+  -webkit-transform: translateX(-50px) translateY(5px) translateZ(0px);
+  -ms-transform: translateX(-50px) translateY(5px) translateZ(0px);
+  transform: translateX(-50px) translateY(5px) translateZ(0px);
+}
+.collapsed.springboard-icon-wrapper.icon-index-3 {
+  -webkit-transform: translateX(5px) translateY(5px) translateZ(0px);
+  -ms-transform: translateX(5px) translateY(5px) translateZ(0px);
+  transform: translateX(5px) translateY(5px) translateZ(0px);
+}
+.collapsed.springboard-icon-wrapper.icon-index-4 {
+  -webkit-transform: translateX(60px) translateY(5px) translateZ(0px);
+  -ms-transform: translateX(60px) translateY(5px) translateZ(0px);
+  transform: translateX(60px) translateY(5px) translateZ(0px);
+}
+.collapsed.springboard-icon-wrapper.icon-index-5 {
+  -webkit-transform: translateX(115px) translateY(5px) translateZ(0px);
+  -ms-transform: translateX(115px) translateY(5px) translateZ(0px);
+  transform: translateX(115px) translateY(5px) translateZ(0px);
+}
+
+/* closed-title (closed narrow, closed short) */
+@media all and (max-height: 410px), all and (max-width: 400px) {
+  .collapsed#springboard-title-wrapper {
+    opacity: 1;
+    -webkit-transform: scale(.67) translateY(-10px) translateZ(0px);
+    -ms-transform: scale(.67) translateY(-10px) translateZ(0px);
+    transform: scale(.67) translateY(-10px) translateZ(0px);
+  }
+  .collapsed#springboard-title-wrapper > #springboard-title > a {
+     cursor: pointer;
+  }
+  .collapsed.springboard-icon-wrapper {
+    opacity: 0; pointer: default;
+  }
+  .collapsed.springboard-icon-wrapper.icon-index-0 {
+    -webkit-transform: translateX(-330px) translateY(-80px) translateZ(0px);
+    -ms-transform: translateX(-330px) translateY(-80px) translateZ(0px);
+    transform: translateX(-250px) translateY(-80px) translateZ(0px);
+  }
+  .collapsed.springboard-icon-wrapper.icon-index-1 {
+    -webkit-transform: translateX(-230px) translateY(-80px) translateZ(0px);
+    -ms-transform: translateX(-230px) translateY(-80px) translateZ(0px);
+    transform: translateX(-160px) translateY(-80px) translateZ(0px);
+  }
+  .collapsed.springboard-icon-wrapper.icon-index-2 {
+    -webkit-transform: translateX(-130px) translateY(-80px) translateZ(0px);
+    -ms-transform: translateX(-130px) translateY(-80px) translateZ(0px);
+    transform: translateX(-75px) translateY(-80px) translateZ(0px);
+  }
+  .collapsed.springboard-icon-wrapper.icon-index-3 {
+    -webkit-transform: translateX(70px) translateY(-80px) translateZ(0px);
+    -ms-transform: translateX(70px) translateY(-80px) translateZ(0px);
+    transform: translateX(5px) translateY(-80px) translateZ(0px);
+  }
+  .collapsed.springboard-icon-wrapper.icon-index-4 {
+    -webkit-transform: translateX(170px) translateY(-80px) translateZ(0px);
+    -ms-transform: translateX(170px) translateY(-80px) translateZ(0px);
+    transform: translateX(90px) translateY(-80px) translateZ(0px);
+  }
+  .collapsed.springboard-icon-wrapper.icon-index-5 {
+    -webkit-transform: translateX(270px) translateY(-80px) translateZ(0px);
+    -ms-transform: translateX(270px) translateY(-80px) translateZ(0px);
+    transform: translateX(180px) translateY(-80px) translateZ(0px);
+  }
+}
+
+
+
+
+
+/*
+
+Springboard background
+
+*/
+
+#app-context-springboard {
+  top: 0; bottom: 0; left: 0; right: 0;
+  background-color: black;
+}
+#springboard-background-image {
+  height: 1000px; width: 1000px;
+  top: 50%; margin-top: -500px;
+  left: 50%; margin-left: -500px;
+  background-color: white;
+}
+#springboard-background-gradient {
+  height: 1000px; width: 1000px;
+  top: 50%; margin-top: -500px;
+  left: 50%; margin-left: -500px;
+  background: -moz-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.01) 0%, rgba(0,0,0,1) 70.7%); /* FF3.6+ */
+  background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(0,0,0,0.01)), color-stop(70.7%,rgba(0,0,0,1))); /* Chrome,Safari4+ */
+  background: -webkit-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.01) 0%,rgba(0,0,0,1) 70.7%); /* Chrome10+,Safari5.1+ */
+  background: -o-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.01) 0%,rgba(0,0,0,1) 70.7%); /* Opera 12+ */
+  background: -ms-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.01) 0%,rgba(0,0,0,1) 70.7%); /* IE10+ */
+  background: radial-gradient(ellipse at center,  rgba(0,0,0,0.01) 0%,rgba(0,0,0,1) 70.7%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', endColorstr='#a6000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+
+
+
+
+/*
+
+  The App Pane
+
+*/
+#app-pane {
+  top: 0; bottom: 0; left: 0; right: 0;
+}
+.app-context {
+  top: 0; bottom: 0; left: 0; right: 0;
+  padding-top: 60px;
+  -webkit-transform-origin: center top;
+  -ms-transform-origin: center top;
+  transform-origin: center center;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-transition: opacity 0.2s ease-in, -webkit-transform 0.2s ease-out, padding 0.25s ease-out;
+  transition: opacity 0.2s ease-in, transform 0.2s ease-out, padding 0.25s ease-out;
+}
+.app-context.inactive {
+  opacity: 0;
+  -webkit-transform: scale(1.3) translateZ(0);
+  -ms-transform: scale(1.3) translateZ(0);
+  transform: scale(1.3) translateZ(0);
+}
+/* This sets the top padding for the collapsed header. */
+@media all and (max-width: 400px), all and (max-height: 410px)  {
+  .app-context {
+    padding-top: 45px;
+  }
+}

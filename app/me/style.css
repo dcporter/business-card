@@ -1,0 +1,1077 @@
+#app-context-me {
+  background-color: lightgray;
+}
+
+/* Background colors. */
+.me-background {
+  background-color: gray;
+  position: absolute;
+  height: 100%; width: 100%;
+  -webkit-transition: background-color 0.25s ease-out;
+  transition: background-color 0.25s ease-out;
+}
+.me-background.active-card-resume {
+  background-color: #DFDAC4; /*#DFDAC4;*/
+}
+.me-background.active-card-twitter {
+  background-color: #C0DEED;
+}
+.me-background.active-card-github {
+  background-color: #AAA;
+}
+.me-background.active-card-linkedin {
+  background-color: #4F9AC8; /*#0274B3;*/
+}
+.me-background.active-card-instagram {
+  background-color: #BFAE96;
+}
+.me-background.active-card-error {
+  background-color: #900;
+}
+
+
+/* Some top-level settings. */
+.me-wrapper-header-business-card *, .me-wrapper-header-icons * {
+  position: static;
+}
+.me-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.me-header {
+  font-size: 16px;
+  width: 100%;
+}
+#me-header-link {
+  text-decoration: none;
+}
+.me-name {
+  position: relative;
+  margin-right: 50%;
+  -webkit-transform: translateY(0px);
+  -ms-transform: translateY(0px);
+  transform: translateY(0px);
+  -webkit-transition: -webkit-transform 0.25s ease-out;
+  transition: transform 0.25s ease-out;
+}
+.me-header.collapsed > .me-wrapper-header-business-card > a > .me-name { /* Supposed performance advantage for child selector vs descendent selector. */
+  cursor: pointer;
+  margin-right: 0;
+  -webkit-transform: translateX(10px) translateY(0);
+  -ms-transform: translateX(10px) translateY(0);
+  transform: translateX(10px) translateY(0);
+}
+.me-contact > a {
+  -webkit-transition: color 0.25s ease-out;
+  transition: color 0.25s ease-out;
+  color: #0000EE;
+}
+.me-header.collapsed > .me-wrapper-header-business-card > .me-contact > a { /* Supposed performance advantage for child selector vs descendent selector. */
+  color: #666;
+}
+.me-name-gripper {
+  position: absolute;
+  height: 30px;
+  width: 11px;
+  margin-left: -3px;
+  opacity: 0;
+  cursor: default;
+  -webkit-transform: translateX(-6px) translateY(0);
+  -ms-transform: translateX(-6px) translateY(0);
+  transform: translateX(-6px) translateY(0);
+  -webkit-transition: opacity 0.25s linear, -webkit-transform 0.25s ease-out;
+  transition: opacity 0.25s linear, transform 0.25s ease-out;
+  background-position: center center;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-image: url('/resources/gripper.png');
+}
+.me-header.collapsed > .me-wrapper-header-business-card > a > .me-name-gripper {
+  opacity: 0.6;
+  cursor: pointer;
+  -webkit-transform: translateY(0);
+  -ms-transform: translateY(0);
+  transform: translateY(0)
+}
+
+/* Subheader */
+.me-body {
+  height: 100%;
+  left: 0; right: 0;
+  -webkit-transition: -webkit-transform 0.25s ease-out, opacity 0.25s linear;
+  transition: transform 0.25s ease-out, opacity 0.25s linear;
+  -webkit-transform: translateY(128px) translateZ(0);
+  -ms-transform: translateY(128px) translateZ(0);
+  transform: translateY(128px) translateZ(0);
+}
+.me-body.collapsed {
+  -webkit-transform: translateY(36px) translateZ(0);
+  -ms-transform: translateY(36px) translateZ(0);
+  transform: translateY(36px) translateZ(0);
+}
+
+#me-card-spacer {
+  width: 100%;
+  -webkit-transform: translateY(63px) translateZ(0px);
+  -ms-transform: translateY(63px) translateZ(0px);
+  transform: translateY(63px) translateZ(0px);
+}
+
+@media all and (max-height: 350px) {
+  #me-card-spacer {
+    -webkit-transform: translateY(-10px) translateZ(0px);
+    -ms-transform: translateY(-10px) translateZ(0px);
+    transform: translateY(-10px) translateZ(0px);
+  }
+}
+
+
+/* Header contents */
+.me-wrapper-header-business-card {
+  position: static;
+  max-width: 360px;
+  padding-top: 4px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.me-contact {
+  float: right;
+  padding-top: 6px;
+}
+.me-contact > a {
+  text-decoration: none;
+}
+.me-contact > a:hover {
+  text-decoration: underline;
+}
+.me-name {
+  font-size: 24px;
+  padding-bottom: 4px;
+  font-family: 'PT Sans Caption', Helvetica, sans-serif;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.me-title {
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media all and (max-width: 395px) {
+  .me-wrapper-header-business-card {
+    padding-right: 5px;
+    margin-left: 0px;
+  }
+}
+@media all and (max-width: 380px) {
+  .me-name {
+    padding-bottom: 6px;
+  }
+  .me-title {
+    font-family: 'PT Sans Narrow', Helvetica, sans-serif;
+  }
+}
+@media all and (max-width: 340px) {
+  .me-contact {
+    font-family: 'PT Sans Narrow', Helvetica, sans-serif;
+  }
+}
+
+/* Icons */
+.me-wrapper-header-icons {
+  text-align: center; /* Centers the in-line icon divs (see display: inline-block below). */
+  font-size: 0px;
+  min-width: 320px;
+  height: 52px;
+  left: 0; right: 0;
+  box-shadow: 0px 14px 6px rgba(0, 0, 0, 0.4);
+  background-color: lightgray;
+}
+.me-icon {
+  height: 44px;
+  width: 44px;
+  margin: 4px;
+  border: 0px solid transparent;
+  border-radius: 8px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  display: inline-block; /* Stacks the icons up next to each other. Brilliant! */
+}
+
+.me-icon-resume {
+  background-color: white;
+  background-image: url('/app/me/resources/images/cv-icon.png');
+  background-size: 100%;
+}
+.me-icon-twitter {
+  background-image: url('/app/me/resources/images/twitter-bird-light-bgs.png');
+  background-size: 145% 145%;
+  background-position: 50% 45%;
+  background-color: white;
+}
+.me-icon-github {
+  background-color: white;
+  background-image: url('/app/me/resources/images/octocat.png');
+  background-size: 115% 115%;
+  background-position: center center;
+}
+.me-icon-linkedin {
+  background-image: url('/app/me/resources/images/linkedin-logo.png');
+  background-size: 100% 100%;
+}
+.me-icon-instagram {
+  background-image: url('/app/me/resources/images/instagram-logo.png');
+  background-size: 100% 100%;
+}
+.me-icon-plus {
+  background-image: url('/app/me/resources/images/google-plus-logo.png');
+  background-size: 100% 100%;  
+}
+
+/* Active icon pointer. Uses the old borders-make-CSS-triangles trick. */
+.me-active-icon-pointer-wrapper {
+  top: 52px;
+  left: 0; right: 0;
+  height: 10px;
+  overflow: hidden;
+}
+.me-active-icon-pointer {
+  position: static;
+  width: 200%;
+  margin-left: -50%;
+  height: 10px;
+  -webkit-transition: -webkit-transform 0.25s ease-in-out, background-color 0.2s linear;
+  transition: transform 0.25s ease-in-out, background-color 0.2s linear;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.me-active-icon-pointer.parked {
+  background-color: lightgray;
+}
+.me-active-icon-pointer-left {
+  left: 0;
+  right: 50%;
+  height: 0;
+  border-top: 10px solid lightgray;
+  border-right: 10px solid transparent;
+}
+.me-active-icon-pointer-right {
+  left: 50%;
+  right: 0;
+  height: 0;
+  border-top: 10px solid lightgray;
+  border-left: 10px solid transparent;
+}
+
+
+/* The cards */
+
+.me-card {
+  top: 20px;
+  left: 3.5%;
+  right: 3.5%;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.4);
+  background-color: white;
+  overflow: hidden;
+  /* Transitions and initial (inactive) values. */
+  opacity: 0;
+  -webkit-transform: scale(1.4) translateY(40px) translateZ(0);
+  -ms-transform: scale(1.4) translateY(40px) translateZ(0);
+  transform: scale(1.4) translateY(40px) translateZ(0);
+  -webkit-transform-origin: top center;
+  -ms-transform-origin: top center;
+  transform-origin: top center;
+  -webkit-transition: opacity 0.25s ease-in, -webkit-transform 0.25s ease-out;
+  transition: opacity 0.25s ease-in, transform 0.25s ease-out;
+}
+.me-card.active {
+  opacity: 1;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.me-card.inactive-left {
+  -webkit-transform: translateX(-175%) translateZ(0);
+  -ms-transform: translateX(-175%) translateZ(0);
+  transform: translateX(-175%) translateZ(0);
+}
+.me-card.inactive-right {
+  -webkit-transform: translateX(175%) translateZ(0);
+  -ms-transform: translateX(175%) translateZ(0);
+  transform: translateX(175%) translateZ(0);
+}
+/* Shrink the top margin over different heights. */
+@media all and (max-height: 500px) {
+  .me-card {
+    top: 15px;
+  }
+}
+@media all and (max-height: 410px) {
+  .me-card {
+    top: 10px;
+  }
+}
+
+/* This div prevents clicks! */
+.me-inactive-card-blocker {
+  position: absolute !important; /* sigh */
+  top: 0; bottom: 0; right: 0; left: 0;
+}
+.me-card.active > .me-inactive-card-blocker {
+  display: none;
+}
+
+/* Resume card */
+#me-card-resume {
+  max-width: 860px;
+  /* The resume card is just an invisible wrapper (to allow a peek-under table of contents), so we have to un-cardify it. */
+  border-radius: 0px;
+  overflow: visible;
+  box-shadow: none;
+  background-color: transparent;
+
+}
+@media all and (min-width: 920px) {
+  /* Switches from static margin to centering when we reach our max-width (+7% margins). */
+  #me-card-resume {
+    margin: 0 auto;
+  }
+}
+
+#me-resume-menu {
+  top: 0; right: 0; bottom: 0; width: 160px;
+  padding-left: 20px;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+#me-resume-menu > * {
+  position: static;
+  cursor: pointer;
+  font-weight: normal;
+  color: #743;
+  text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.7);
+  line-height: 1.5em;
+  margin-bottom: 6px;
+}
+#me-resume-menu > h3 {
+  margin-top: 6px;
+  margin-bottom: 3px;
+}
+
+#me-resume-menu > h4 {
+  margin-left: 6px;
+}
+
+/* This all has to look substantially different when in super-short mode. */
+@media all and (max-height: 350px) {
+  #me-resume-menu {
+    margin: 5px 10px 5px 0;
+    padding: 10px 0 10px 10px;
+    background-color: #F5F5F5;
+    box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.4);
+  }
+  #me-resume-menu > * {
+    color: #777;
+  }
+}
+
+#me-apparent-card-resume {
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* Since for this card the outer card is an invisible wrapper, we have to mimic its styles here. */
+  box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.4);
+  background-color: white;
+  -webkit-transition: -webkit-transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+  transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+#me-apparent-card-resume.shifted {
+  -webkit-transform: translateX(-180px) translateZ(0);
+  -ms-transform: translateX(-180px) translateZ(0);
+  transform: translateX(-180px) translateZ(0);
+}
+
+#me-resume-menu-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  background-image: url('/resources/gripper.png');
+  background-size: 15px;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+}
+.firefox #me-resume-menu-button {
+  right: 14px;
+}
+#me-resume-menu-button.touch {
+  top: -10px;
+  right: -10px;
+  height: 50px;
+  width: 50px;
+}
+
+#me-resume-scroller {
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#me-resume {
+  margin: 65px 80px 0 80px;
+  padding-bottom: 30px;
+  overflow: hidden;
+}
+@media all and (max-width: 800px) {
+  #me-resume {
+    margin: 60px 65px 0 65px;
+    padding-bottom: 20px;
+  }
+}
+@media all and (max-width: 675px) {
+  #me-resume {
+    margin: 45px 50px 0 50px;
+    padding-bottom: 20px;
+  }
+}
+@media all and (max-width: 550px) {
+  #me-resume {
+    margin: 35px 40px 0 40px;
+    padding-bottom: 20px;
+  }
+}
+@media all and (max-width: 450px) {
+  #me-resume {
+    margin: 25px 25px 0 25px;
+    padding-bottom: 15px;
+  }
+}
+@media all and (max-width: 350px) {
+  #me-resume {
+    margin: 18px 15px 0 15px;
+    padding-bottom: 15px;
+  }
+}
+
+#me-resume * {
+  position: static;
+  cursor: default;
+}
+
+#me-resume-header > h1 {
+  line-height: 1em;
+  padding-right: 20px;
+  color: #888;
+}
+#me-resume-header {
+  color: #777;
+}
+@media all and (max-width: 350px) {
+  #me-resume-header > h1 {
+    font-size: 28px;
+  }
+}
+/* The stackers stack next to each other, with pipes in between; the pipes disappear as the
+   stacked elements shift down to the next row. (requires #me-resume overflow hidden)*/
+.me-resume-stackers > * {
+  display: inline-block;
+}
+.me-resume-stackers > :not(:last-child) {
+  margin-right: 1em;
+}
+.me-resume-stackers > :not(:first-child)::before {
+  content: "|";
+  color: lightgray;
+  position: absolute;
+  margin-left: -0.6em;
+}
+
+#me-resume h2 {
+  line-height: 1em;
+  margin-top: 20px;
+  padding: 0 4px;
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 12px;
+  color: #999;
+}
+
+.me-resume-section {
+  padding: 0 4px;
+}
+
+#me-resume h3 {
+  line-height: 1em;
+  font-size: 16px;
+  margin-bottom: 8px;
+  text-decoration: underline;
+  color: #555;
+}
+@media all and (max-width: 400px) {
+  #me-resume h3 {
+    margin-bottom: 16px;
+  }
+}
+
+#me-resume h3 div {
+  text-decoration: underline;
+  display: inline-block;
+}
+
+#me-resume h4 {
+  line-height: 1em;
+  font-size: 14px;
+  color: #555;
+}
+#me-resume ul {
+  margin: 10px 0 14px;
+  list-style-type: none;
+  padding-left: 16px;
+}
+#me-resume li::before {
+  content: "\00bb";
+  margin-left: -12px;
+  color: #777;
+  position: absolute;
+}
+@media all and (max-width: 400px) {
+  #me-resume ul {
+    padding-left: 10px;
+  }
+  #me-resume li::before {
+    margin-left: -10px;
+  }
+}
+#me-resume li {
+  margin-bottom: 8px;
+}
+
+#me-resume a {
+  color: #249;
+  text-decoration: underline;
+  cursor: pointer;
+}
+#me-resume strong {
+  line-height: 0; /* The strong element shouldn't have any effect on its parent element's line height. */
+  color: #555;
+}
+
+
+/* Twitter card */
+#me-card-twitter {
+  max-width: 520px;
+  background-size: cover;
+  background-position: 30% 40%;
+}
+@media all and (min-width: 555px) {
+  /* Switches from static margin to centering when we reach our max-width (+7% margins). */
+  #me-card-twitter {
+    margin: 0 auto;
+  }
+}
+
+.me-twitter-body-lightener {
+  position: absolute;
+  top: 40px;
+  left: 0; right: 0; bottom: 0;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.me-twitter-header {
+  height: 40px;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.8);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.me-twitter-handle {
+  top: 10px;
+  left: 10px;
+  font-family: 'PT Sans Caption', Helvetica, sans-serif;
+}
+
+.twitter-follow-button {
+  top: 6px;
+  right: 10px;
+}
+
+.me-twitter-handle-link {
+  text-decoration: none;
+  color: #458;
+}
+.me-twitter-handle-link:hover {
+  text-decoration: underline;
+}
+
+.me-tweets {
+  top: 0px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  -webkit-backface-visibility: hidden; /* again: wtf is this */
+}
+.me-tweets * {
+  position: relative;
+}
+
+.me-tweet {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  padding-bottom: 4px;
+  min-height: 50px;
+}
+.me-tweet.me-tweet-first {
+  margin-top: 40px;
+}
+.me-tweet.me-retweet {
+  text-align: right;
+}
+
+.me-tweet-wrapper a {
+  text-decoration: none;
+  color: black;
+}
+.me-tweet-wrapper:not(.touch) a:hover {
+  text-decoration: underline;
+}
+
+.me-tweet-wrapper {
+  margin-left: 58px;
+}
+.me-tweet-wrapper.me-retweet {
+  margin-left: 0;
+  margin-right: 58px;
+}
+
+a.me-tweet-tweeter {
+  text-decoration: none;
+}
+
+.me-tweet-avatar {
+  position: absolute;
+  height: 48px;
+  width: 48px;
+  border-radius: 5px;
+  background-size: 100%;
+}
+.me-tweet-avatar:not(.me-retweet) {
+  left: -58px;
+}
+.me-tweet-avatar.me-retweet {
+  right: -58px;
+  margin-right: 0px;
+  margin-left: 10px;
+}
+.me-tweet-name, .me-tweet-handle {
+  display: inline-block;
+}
+.me-tweet-name {
+  font-weight: bold;
+  color: black;
+}
+a.me-tweet-tweeter:hover > .me-tweet-name {
+  text-decoration: underline;
+}
+
+.me-tweet-handle {
+  color: #777;
+  font-size: 12px;
+  margin-left: 3px;
+}
+
+.me-tweet-body {
+  margin-top: 2px;
+  cursor: default;
+}
+
+/* The footer (buttons for mice). */
+.me-tweet-footer {
+  margin-top: 3px;
+  font-size: 14px;
+  cursor: default;
+}
+.me-tweet-retweet, .me-tweet-reply {
+  color: #777;
+  padding-left: 20px;
+  display: inline-block;
+  background-size: 19px;
+  background-repeat: no-repeat;
+}
+.me-tweet-retweet:hover, .me-tweet-reply:hover {
+  text-decoration: underline;
+}
+.me-tweet-retweet {
+  background-image: url('/app/me/resources/images/retweet.svg'); /* Image courtesy of http://www.alexpeattie.com/projects/justvector_icons/ */
+  margin-right: 4px;
+}
+.me-tweet-reply {
+  background-image: url('/app/me/resources/images/reply.svg');
+  background-position: 0px 4px;
+}
+
+/* The button bar (buttons for fingers). */
+.me-tweet.touch {
+  padding-bottom: 10px;
+}
+.me-tweet-footer.touch {
+  display: none;
+}
+
+.me-tweet-tap-button-bar {
+  display: none;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+.me-tweet-tap-button-bar.touch {
+  display: block;
+}
+.me-tweet-tap-button-bar.animate {
+  -webkit-transition: opacity 0.15s ease-out;
+  transition: opacity 0.15s ease-out;
+}
+.me-tweet-tap-button-bar.active {
+  opacity: 1;
+  /* There's a webkit flash-frame animation bug that I'm triggering with the above opacity animation; this completely bananas hack fixes it. Thanks -> https://groups.google.com/forum/?fromgroups=#!topic/phonegap/BL2LH1N3z-c */
+  -webkit-backface-visibility: hidden;
+}
+.me-tweet-tap-button-bar.active > .me-tweet-tap-catcher {
+  display: none;
+}
+.me-tweet-tap-button {
+  position: absolute;
+  height: 60px;
+  width: 60px;
+  left: 50%;
+  top: 50%;
+  margin-top: -30px;
+  border-radius: 5px;
+  border: 1px solid #DDD;
+  background-color: white;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.me-tweet-avatar-touch {
+  border-width: 0px;
+  margin-left: -135px;
+}
+.me-tweet-retweet-touch {
+  margin-left: -65px;
+  background-size: 90%;
+  background-image: url('/app/me/resources/images/retweet.svg'); /* Image courtesy of http://www.alexpeattie.com/projects/justvector_icons/ */
+}
+.me-tweet-reply-touch {
+  margin-left: 5px;
+  background-size: 80%;
+  background-image: url('/app/me/resources/images/reply.svg'); /* Made this myself at http://www.clker.com/inc/svgedit/svg-editor.html */
+}
+.me-tweet-cancel-touch {
+  margin-left: 75px;
+  background-image: url('/app/me/resources/images/cancel.svg'); /* Image courtesy of wikimedia: http://en.wikipedia.org/wiki/File:Deletion_icon.svg */
+}
+.me-tweet-tap-catcher {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.me-tweet-tap-button-bar.active > .me-tweet-tap-catcher {
+  display: none;
+}
+
+/* The "Keep Reading" button at the bottom of the feed. */
+.me-twitter-footer > div {
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  /* Webkit isn't hiding the overflow on my rounded-corner cards. This at least solves the issue when scrolled fully down. :-X */
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+.me-twitter-footer {
+  text-decoration: none;
+  color: black;
+}
+.me-twitter-footer:hover {
+  text-decoration: underline;
+}
+
+
+/* GitHub card */
+#me-card-github {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 600px;
+  padding: 0 10px;
+}
+@media all and (min-width: 640px) {
+  /* Switches from static margin to centering when we reach our max-width (+7% margins). */
+  #me-card-github {
+    margin: 0 auto;
+  }
+}
+
+#me-card-github * {
+  position: static;
+}
+
+/* Header and body layout for larger screens. */
+#me-github-header {
+  text-align: center;
+  font-size: 24px;
+  margin: 10px;
+  cursor: default;
+}
+
+#me-github-user {
+  float: left;
+  margin-left: 18px;
+  text-align: center;
+  font-size: 12px;
+}
+#me-github-user.touch {
+  line-height: 25px;
+}
+#me-github-avatar {
+  height: 100px;
+  width: 100px;
+  border: darkgray 1px solid;
+  border-radius: 4px;
+  background-color: white;
+}
+
+#me-github-account-link {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 2px;
+}
+
+#me-github-projects {
+  margin-left: 140px;
+  padding-bottom: 12px;
+}
+#me-github-projects > hr.first {
+  display: none;
+}
+.me-github-project-minor > .me-github-project-description {
+  font-size: 14px;
+}
+.me-github-project-header > a {
+  background-image: url('/app/me/resources/images/book-9-128.png'); /* Image courtesy of http://www.iconsdb.com/gray-icons/book-9-icon.html */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: left top;
+  padding-left: 32px;
+  margin-left: -2px;
+}
+.me-github-project {
+  cursor: default;
+}
+.me-github-project-header-minor > a {
+  padding-left: 26px;
+}
+
+/* Header & body layout for narrower screens. */
+@media all and (max-width: 500px) {
+  #me-github-header {
+    margin-bottom: 4px;
+  }
+  #me-github-user {
+    float: none;
+    margin: 0;
+    text-align: left;
+    font-size: 14px;
+  }
+  #me-github-avatar {
+    float: left;
+    margin-right: 15px;
+  }
+  #me-github-projects {
+    margin-left: 0;
+    padding-bottom: 10px;
+    float: left;
+    clear: left;
+  }
+  #me-github-projects > hr.first {
+    display: block;
+  }
+  .me-github-project-description {
+    margin-left: 3px;
+  }
+}
+
+/* Body details. */
+.me-github-project-activity.no-activity {
+  display: none;
+}
+.me-github-project-activity {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+
+
+/* LinkedIn card */
+#me-card-linkedin {
+  max-width: 400px;
+  max-height: 250px;
+}
+@media all and (min-width: 428px) {
+  /* Switches from static margin to centering when we reach our max-width (+7% margins). */
+  #me-card-linkedin {
+    margin: 0 auto;
+  }
+}
+#me-linkedin-wrapper {
+  top: 0; left: 0; right: 0; bottom: 0;
+}
+.IN-widget {
+  left: 50%;
+  margin-left: -150px;
+  top: 50%;
+  margin-top: -78px;
+}
+
+
+
+/* Instagram card */
+#me-card-instagram {
+  max-width: 400px;
+  max-height: 400px;
+  background-color: #ECEDF1;
+  border-radius: 5px;
+  overflow: visible;
+}
+@media all and (min-width: 428px) {
+  /* Switches from static margin to centering when we reach our max-width (+7% margins). */
+  #me-card-instagram {
+    margin: 0 auto;
+  }
+}
+
+@font-face {
+  font-family: 'Grand Hotel';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Grand Hotel'), local('GrandHotel'), url('/app/me/resources/Grand Hotel.woff') format('woff');
+}
+
+#me-instagram-wrapper {
+  top: 8px; left: 8px; right: 8px; bottom: 8px;
+  background-color: #013;
+  overflow: hidden;
+}
+
+#me-instagram-canvas {
+  right: 0;
+}
+#me-instagram-canvas.wider {
+  width: 100%;
+}
+#me-instagram-canvas.taller {
+  height: 100%;
+}
+
+#me-instagram-tag {
+  font-family: 'Grand Hotel', cursive;
+  color: white;
+  bottom: 15px;
+  right: 30px;
+  font-size: 28px;
+  text-shadow: -1px 0 2px black;
+  cursor: default;
+}
+
+.me-instagram-photo-corner {
+  height: 40px;
+  width: 40px;
+  background-image: url('/app/me/resources/images/photo-corner.png');
+  background-repeat: no-repeat;
+  background-size: 100%;
+  box-shadow: -2px -2px 3px -1px rgba(0, 0, 0, 0.4);
+}
+#me-instagram-photo-corner-top-left {
+  top: -3px;
+  left: -3px;
+}
+#me-instagram-photo-corner-top-right {
+  top: -3px;
+  right: -3px;
+  -webkit-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+#me-instagram-photo-corner-bottom-left {
+  bottom: -3px;
+  left: -3px;
+  -webkit-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+#me-instagram-photo-corner-bottom-right {
+  bottom: -3px;
+  right: -3px;
+  -webkit-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+
+/* Error card */
+#me-card-error {
+  max-width: 520px;
+  background-color: #FED;
+}
+
+@media all and (min-width: 555px) {
+  /* Switches from static margin to centering when we reach our max-width (+7% margins). */
+  #me-card-error {
+    margin: 0 auto;
+  }
+}
+
+#me-card-error * {
+  position: static;
+}
+
+#me-card-error-inner {
+  left: 0; right: 0;
+  padding: 40px 20%;
+  text-align: center;
+}
+@media all and (max-height: 310px) {
+  #me-card-error-inner {
+    padding: 20px 8%;
+  }
+}
+#me-card-error-inner > * {
+  margin-bottom: 15px;
+}
+
+#me-error-didyoumean.noyoudidnt {
+  display: none;
+}
