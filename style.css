@@ -75,7 +75,7 @@ hr {
 }
 
 .firefox .firefox-scroll-fix {
-  right: -14px; /* Scrollbar fix hack. */
+  /*right: -14px;*/ /* Scrollbar fix hack. (This seems to be no longer needed!) */
 }
 
 
