@@ -141,59 +141,62 @@ var tweetTemplate = '' +
   '</div>' +
 '</div>';
 
-// TODO: Roll my own entities. I don't like how this does it.
-/* twitter-entities.js
+/* Modified from:
+ * twitter-entities.js
  * Copyright 2010, Wade Simmons
  * Licensed under the MIT license
  * http://wades.im/mons
  */
 function linkify_entities(tweet) {
+  if (!(tweet.entities)) {
+      return tweet.text;
+  }
 
-  if (!(tweet.entities)) return tweet.text;
-  
   // This is very naive, should find a better way to parse this
-  var index_map = {};
-  
-  var i, len;
-  // urls
-  len = tweet.entities.urls ? tweet.entities.urls.length : 0;
+  var index_map = {}
+
+  var i, len, entry;
+  // urls + media
+  var urlsAndMedia = (tweet.entities.urls || []).concat(tweet.entities.media || []);
+  len = urlsAndMedia.length;
   for (i = 0; i < len; i++) {
-    entry = tweet.entities.urls[i];
-    index_map[entry.indices[0]] = [entry.indices[1], function(text) {return "<a target='_blank' href='"+entry.url+"'>"+text+"</a>"}]
+    entry = urlsAndMedia[i];
+    index_map[entry.indices[0]] = [entry.indices[1], "<a href='"+(entry.expanded_url||entry.url)+"'>"+entry.display_url+"</a>"];
   }
   // hashtags
   len = tweet.entities.hashtags ? tweet.entities.hashtags.length : 0;
   for (i = 0; i < len; i++) {
     entry = tweet.entities.hashtags[i];
-    index_map[entry.indices[0]] = [entry.indices[1], function(text) {return "<a target='_blank' href='http://twitter.com/search?q="+escape("#"+entry.text)+"'>"+text+"</a>"}]
+    index_map[entry.indices[0]] = [entry.indices[1], "<a href='http://twitter.com/search?q="+"#"+entry.text+"'>%@</a>"];
   }
   // user_mentions
   len = tweet.entities.user_mentions ? tweet.entities.user_mentions.length : 0;
   for (i = 0; i < len; i++) {
     entry = tweet.entities.user_mentions[i];
-    index_map[entry.indices[0]] = [entry.indices[1], function(text) {return "<a target='_blank' title='"+entry.name+"' href='http://twitter.com/"+entry.screen_name+"'>"+text+"</a>"}]
+    index_map[entry.indices[0]] = [entry.indices[1], "<a title='"+entry.name+"' href='http://twitter.com/"+entry.screen_name+"'>%@</a>"];
   }
-  
-  var result = ""
-  var last_i = 0
-  
+
+  var result = "";
+  var last_i = 0;
+
   // iterate through the string looking for matches in the index_map
-  for (i=0; i < tweet.text.length; ++i) {
-    var ind = index_map[i]
+  len = tweet.text.length;
+  for (i=0; i < len; ++i) {
+    var ind = index_map[i];
     if (ind) {
-      var end = ind[0]
-      var func = ind[1]
+      var end = ind[0];
+      var str = ind[1];
       if (i > last_i) {
         result += tweet.text.substring(last_i, i);
       }
-      result += func(tweet.text.substring(i, end));
-      i = end - 1
-      last_i = end
+      result += str.fmt(tweet.text.substring(i, end));
+      i = end - 1;
+      last_i = end;
     }
   }
-  
+
   if (i > last_i) {
-    result += tweet.text.substring(last_i, i)
+    result += tweet.text.substring(last_i, i);
   }
   
   return result;
