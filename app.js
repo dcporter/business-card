@@ -221,15 +221,15 @@ apps.onReady(function() {
 });
 
 apps.on('clientDidUpdate', function(app) {
-  console.log('JS changed in ' + app.id);
+  console.log('JS changed in %@ (%@)'.fmt(app.id, new Date()));
   compileBasePage();
 });
 apps.on('styleDidUpdate', function(app) {
-  console.log('Style changed in ' + app.id);
+  console.log('Style changed in %@ (%@)'.fmt(app.id, new Date()));
   compileBasePage();
 });
 apps.on('htmlDidUpdate', function(app) {
-  console.log('HTML changed in ' + app.id);
+  console.log('HTML changed in %@ (%@)'.fmt(app.id, new Date()));
   compileBasePage();
 })
 
