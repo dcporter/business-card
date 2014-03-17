@@ -8,7 +8,7 @@ var https = require('https'),
 
 module.exports = exports = new (require('events').EventEmitter);
 
-// Flags
+// Data as it loads. (This could be a lot prettier.)
 var clientRaw = null,
     twProfilePic = null,
     twScreeName = null,
@@ -28,6 +28,7 @@ function compileClient() {
     twitter_screen_name: twScreeName,
     twitter_profile_pic_url: twProfilePic,
     tweets: tweetMarkup,
+    github_user_name: process.env.GITHUB_USER_NAME,
     github_starred_count: githubStarCount,
     github_project_markup: githubProjectMarkup
   });
@@ -99,7 +100,7 @@ function refreshTweets() {
     handleTweetsResponse
   );
 }
-setInterval(refreshTweets, 300000);
+setInterval(refreshTweets, 300000); // five minutes
 refreshTweets();
 
 var rawTweets = null;
@@ -262,17 +263,32 @@ function compileTweets() {
 //
 // Pull user data. Pull activity. Compile repo list into HTML.
 
-// User data
-var errorGithubUserData = {
-  github_user_name: '(api error)',
+// User data for various error states.
+var apiErrorGithubUserData = {
   github_gravatar_id: '',
   github_repo_count: '(api error)',
   github_followers: '(api error)',
   github_following: '(api error)'
 };
+var parseErrorGithubUserData = {
+  github_gravatar_id: '',
+  github_repo_count: '(parse error)',
+  github_followers: '(parse error)',
+  github_following: '(parse error)'
+};
+var rateLimitGithubUserData = {
+  github_gravatar_id: '',
+  github_repo_count: '(rate limit)',
+  github_followers: '(rate limit)',
+  github_following: '(rate limit)'
+};
+
+// The required user agent header to send to the GitHub API. See http://developer.github.com/v3/#user-agent-required
 var githubApiHeaders = {
   'User-Agent': '[Bussiness Card](https://www.github.com/dcporter/business-card)'
 };
+
+// The user data request.
 https.get({
   hostname: 'api.github.com',
   path: '/users/%@'.fmt(process.env.GITHUB_USER_NAME),
@@ -281,22 +297,36 @@ https.get({
   var output = '';
   response.on('data', function(chunk) { output += chunk; });
   response.on('end', function() {
-    try {
-      var data = JSON.parse(output);
-      githubUserData = {
-        github_user_name: process.env.GITHUB_USER_NAME,
-        github_gravatar_id: data.gravatar_id,
-        github_repo_count: data.public_repos,
-        github_followers: data.followers,
-        github_following: data.following
-      };
-    } catch(e) {
-      githubUserData = errorGithubUserData;
+    // Good stuff.
+    if (response.statusCode === 200) {
+      try {
+        var data = JSON.parse(output);
+        githubUserData = {
+          github_gravatar_id: data.gravatar_id,
+          github_repo_count: data.public_repos,
+          github_followers: data.followers,
+          github_following: data.following
+        };
+      } catch(e) {
+        githubUserData = parseErrorGithubUserData;
+      }
+    }
+    // Not good stuff.
+    else {
+      console.log('Error %@ while loading GitHub user data:'.fmt(response.statusCode));
+      console.log(output);
+      console.log('Headers:');
+      console.log(response.headers);
+      if (response.statusCode === 403) {
+        githubUserData = rateLimitGithubUserData;
+      } else {
+        githubUserData = apiErrorGithubUserData;
+      }
     }
     compileClient();
   });
 }).on('error', function(err) {
-  githubUserData = errorGithubUserData;
+  githubUserData = apiErrorGithubUserData;
   compileClient();
 });
 
@@ -309,10 +339,18 @@ https.get({
   var output = '';
   response.on('data', function(chunk) { output += chunk; });
   response.on('end', function() {
-    try {
-      var data = JSON.parse(output);
-      githubStarCount = data.length;
-    } catch(e) {
+    if (response.statusCode === 200) {
+      try {
+        var data = JSON.parse(output);
+        githubStarCount = data.length;
+      } catch(e) {
+        githubStarCount = '(parse error)';
+      }
+    }
+    // Not good stuff.
+    else if (response.statusCode === 403) {
+      githubStarCount = '(rate limit)';
+    } else {
       githubStarCount = '(api error)';
     }
     compileClient();
@@ -323,9 +361,12 @@ https.get({
 });
 
 var githubActivityRaw = [],
-    githubActivityPages = 4;
+    githubActivityPages = 4,
+    githubActivityEtags = []; // Sent back to github to help with rate limits.
 function refreshOnePageOfGithubActivity(page) {
   var i = page - 1;
+  // Set up the etag header.
+  if (githubActivityEtags[i]) githubApiHeaders['If-None-Match'] = githubActivityEtags[i];
   https.get({
     hostname: 'api.github.com',
     path: '/users/%@/events/public?page=%@'.fmt(process.env.GITHUB_USER_NAME, page),
@@ -334,25 +375,42 @@ function refreshOnePageOfGithubActivity(page) {
     var output = '';
     response.on('data', function(chunk) { output += chunk; });
     response.on('end', function() {
-      if (githubActivityRaw[i] !== output) {
-        githubActivityRaw[i] = output;
-        compileGithubActivity();
+      // Good stuff.
+      if (response.statusCode === 200) {
+        if (githubActivityRaw[i] !== output) {
+          githubActivityEtags[i] = response.headers.etag;
+          githubActivityRaw[i] = output;
+          compileGithubActivity();
+        }
+      }
+      else if (response.statusCode === 304) {
+        // 304 NOT MODIFIED (by etag) => Nothing to change!
+      }
+      // Bad stuff.
+      else {
+        // If we don't already have a valid activity value then we have to create one and move on with our lives.
+        if (!githubActivityRaw[i]) {
+          githubActivityRaw[i] = '[]';
+          compileGithubActivity();
+        }        
       }
     });
   }).on('error', function(err) {
     // If we don't already have a valid activity value then we have to create one and move on with our lives.
     if (!githubActivityRaw[i]) {
       githubActivityRaw[i] = '[]';
-      compileGithubActivity();      
+      compileGithubActivity();
     }
   });
+  // Clear the etag header.
+  delete githubApiHeaders['If-None-Match'];
 }
 function refreshGithubActivity() {
   for (var i = 1; i <= githubActivityPages; i++) {
     refreshOnePageOfGithubActivity(i);
   }
 }
-setInterval(refreshGithubActivity, 3000000);
+setInterval(refreshGithubActivity, 3000000); // fifty minutes
 refreshGithubActivity();
 
 
@@ -381,7 +439,7 @@ function fetchRepos() {
     compileGithubActivity();
   });
 }
-setInterval(fetchRepos, 5800000);
+setInterval(fetchRepos, 5800000); // 96 minutes.
 fetchRepos();
 
 // (HACK: Real quick, let's tweak moment's time english to prevent "...in the last a month" bug.)
@@ -422,7 +480,7 @@ function compileGithubActivity() {
     repo = null;
     item = githubActivity.shift();
 
-    if (!item) continue;
+    if (!item || !item.repo) continue;
 
     // Match the repo to the item by item.repo.name
     for (i = 0; i < len; i++) {
