@@ -128,15 +128,15 @@ var tweetTemplate = '' +
     '<div class="me-tweet-body %{me_retweet}">%{tweet_text}</div>' +
     '<div class="me-tweet-footer %{me_retweet} %{touch}">' +
       '<div class="me-tweet-timestamp">%{tweet_timestamp}</div>' +
-      '<a href="https://twitter.com/intent/retweet?tweet_id=%{tweet_id}"><div class="me-tweet-retweet">Retweet</div></a>' +
-      '<a href="https://twitter.com/intent/tweet?in_reply_to=%{tweet_id}"><div class="me-tweet-reply">Reply</div></a>' +
+      '<a href="https://twitter.com/intent/retweet?tweet_id=%{tweet_id}"><i class="fa fa-retweet"></i><div class="me-tweet-retweet">Retweet</div></a>' +
+      '<a href="https://twitter.com/intent/tweet?in_reply_to=%{tweet_id}"><i class="fa fa-reply"></i><div class="me-tweet-reply">Reply</div></a>' +
     '</div>' +
   '</div>' +
   '<div class="me-tweet-tap-button-bar %{touch}" data-tweet-id="%{tweet_id}">' +
     '<a class="me-tweet-tap-button me-tweet-avatar-touch" style="background-image: url(\'%{tweet_avatar_url}\')" href="https://twitter.com/%{tweet_user_handle}" target="_blank"></a>' +
-    '<a class="me-tweet-tap-button me-tweet-retweet-touch" href="https://twitter.com/intent/retweet?tweet_id=%{tweet_id}"></a>' +
-    '<a class="me-tweet-tap-button me-tweet-reply-touch" href="https://twitter.com/intent/tweet?in_reply_to=%{tweet_id}"></a>' +
-    '<div class="me-tweet-tap-button me-tweet-cancel-touch" data-tweet-id="%{tweet_id}"></div>' +
+    '<a class="me-tweet-tap-button me-tweet-retweet-touch fa fa-retweet fa-3x" href="https://twitter.com/intent/retweet?tweet_id=%{tweet_id}"></a>' +
+    '<a class="me-tweet-tap-button me-tweet-reply-touch fa fa-reply fa-3x" href="https://twitter.com/intent/tweet?in_reply_to=%{tweet_id}"></a>' +
+    '<div class="me-tweet-tap-button me-tweet-cancel-touch fa fa-times-circle fa-3x" data-tweet-id="%{tweet_id}"></div>' +
     '<div class="me-tweet-tap-catcher %{touch}" data-tweet-id="%{tweet_id}"></div>' +
   '</div>' +
 '</div>';

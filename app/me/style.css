@@ -634,6 +634,7 @@
   padding: 10px;
   padding-bottom: 4px;
   min-height: 50px;
+  overflow: hidden; /* Prevents stretchy tweets from screwing up scrolling on iDevices. */
 }
 .me-tweet.me-tweet-first {
   margin-top: 40px;
@@ -707,21 +708,14 @@ a.me-tweet-tweeter:hover > .me-tweet-name {
 }
 .me-tweet-retweet, .me-tweet-reply {
   color: #777;
-  padding-left: 20px;
+  padding-left: 4px;
   display: inline-block;
-  background-size: 19px;
-  background-repeat: no-repeat;
 }
 .me-tweet-retweet:hover, .me-tweet-reply:hover {
   text-decoration: underline;
 }
 .me-tweet-retweet {
-  background-image: url('/app/me/resources/images/retweet.svg'); /* Image courtesy of http://www.alexpeattie.com/projects/justvector_icons/ */
-  margin-right: 4px;
-}
-.me-tweet-reply {
-  background-image: url('/app/me/resources/images/reply.svg');
-  background-position: 0px 4px;
+  margin-right: 8px;
 }
 
 /* The button bar (buttons for fingers). */
@@ -770,6 +764,9 @@ a.me-tweet-tweeter:hover > .me-tweet-name {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  text-align: center;
+  line-height: 60px;
+  color: black;
 }
 .me-tweet-avatar-touch {
   border-width: 0px;
@@ -777,17 +774,13 @@ a.me-tweet-tweeter:hover > .me-tweet-name {
 }
 .me-tweet-retweet-touch {
   margin-left: -65px;
-  background-size: 90%;
-  background-image: url('/app/me/resources/images/retweet.svg'); /* Image courtesy of http://www.alexpeattie.com/projects/justvector_icons/ */
 }
 .me-tweet-reply-touch {
   margin-left: 5px;
-  background-size: 80%;
-  background-image: url('/app/me/resources/images/reply.svg'); /* Made this myself at http://www.clker.com/inc/svgedit/svg-editor.html */
+  line-height: 68px;
 }
 .me-tweet-cancel-touch {
   margin-left: 75px;
-  background-image: url('/app/me/resources/images/cancel.svg'); /* Image courtesy of wikimedia: http://en.wikipedia.org/wiki/File:Deletion_icon.svg */
 }
 .me-tweet-tap-catcher {
   position: absolute;
