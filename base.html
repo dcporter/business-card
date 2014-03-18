@@ -87,7 +87,7 @@ try {
 
 
 // Add browser-specific classes to body.
-$('body').addClass('%@ %@ %@'.fmt(SC.browser.current, SC.browser.device, SC.browser.engine));
+$('body').addClass('%@ %@ %@ %@'.fmt(SC.browser.os, SC.browser.current, SC.browser.device, SC.browser.engine));
 
 // Add touch detection to SC.browser, and apply it.
 SC.browser.touch = 'ontouchstart' in window || SC.browser.name === SC.BROWSER.android;

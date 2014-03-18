@@ -9,7 +9,6 @@ body {
   background-color: white;
   margin: 0;
   overflow: hidden;
-  font-family: 'PT Sans', 'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
@@ -135,10 +134,19 @@ hr {
   src: local('Crimson Text Bold'), local('CrimsonText-Bold'), url('/resources/Crimson Text Bold.woff') format('woff');
 }
 
-.caption {
-
+/*
+Fonts, with sad Windows fallbacks.
+*/
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+body:not(.windows) {
+  font-family: 'PT Sans', 'Helvetica Neue', 'HelveticaNeue', Helvetica, sans-serif;
 }
 .serif {
+  font-family: 'Times New Roman', Times, serif;
+}
+body:not(.windows) .serif {
   font-family: 'Crimson Text', 'Times New Roman', Times, serif;
 }
 
