@@ -426,37 +426,50 @@ cards.resume = (function() {
   // Multitouch menu helpers. We have two goals here: first, prevent a drag from triggering a menu event if
   // the user has scrolled meaningfully; second, allow the user to swipe the menu open and close in the same
   // gesture.
-  var didBind, isScrolling, startingState;
+  var didBind, isScrolling, extremeX;
   function dragEnd(evt) {
-    didBind = false; isScrolling = false; startingState = null;
+    didBind = false; isScrolling = false; extremeX = null;
     $resume.unbind('touchend', dragEnd);
   }
   function dragProcessor(evt) {
-    // Gatekeep: No event, no direction, too much Y or not enough X.
-    if (!evt || !evt.direction || isScrolling || Math.abs(evt.distanceX) < 30) return;
-    // Bind up our drag-end event.
+    // Gatekeep: No event or we are scrolling.
+    if (!evt || isScrolling) return;
+
+    // Update our extremes. If the menu is open, our origin is the farthest left
+    // (smaller x) that events have gone; if the menu is open, our origin is the
+    // farthest right (larger x). This flagged switch means that we can use the
+    // same variable for both.
+    if (lameMenuIsOpenStateFlag) {
+      if (extremeX == null || extremeX > evt.position.x) extremeX = evt.position.x;
+    } else {
+      if (extremeX == null || extremeX < evt.position.x) extremeX = evt.position.x;
+    }
+
+    // Bind up our drag-end event. We actively bind and unbind the drag-end event
+    // because I forget why.
     if (!didBind) {
       $resume.bind('touchend', dragEnd);
       didBind = true;
     }
-    // Set up isScrolling.
-    if (Math.abs(evt.distanceY) > 20) {
+
+    // If we're scrolling, set the flag (sigh) to prevent this method from doing
+    // anything for the duration.
+    if (Math.abs(evt.deltaY) > 20) {
       isScrolling = true;
       return;
     }
-    if (startingState === null) startingState = lameMenuIsOpenStateFlag;
-    // If we've swiped left, open up.
-    if (evt.direction === 'left' && !lameMenuIsOpenStateFlag) {
-      showMenu();
-      didOpen = true;
-      didClose = false;
+
+    // Calculate distance from extreme. (Note that since the extreme is
+    // gated by the menu state, it's self-zeroing and can be calculated
+    // without sign.)
+    var distanceFromExtreme = Math.abs(extremeX - evt.position.x);
+
+    // If we've crossed our threshold, make it rain! With menus!
+    var threshold = 30;
+    if (distanceFromExtreme >= threshold) {
+      toggleMenu();
     }
-    // If we swiped right, close up.
-    if (evt.direction === 'right' && lameMenuIsOpenStateFlag) {
-      hideMenu();
-      didClose = true;
-      didOpen = false;
-    }
+
     return false;
   }
 
