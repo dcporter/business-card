@@ -285,6 +285,12 @@ var rateLimitGithubUserData = {
   github_followers: '(rate limit)',
   github_following: '(rate limit)'
 };
+var errorGithubUserData = {
+  github_gravatar_id: '',
+  github_repo_count: '(error)',
+  github_followers: '(error)',
+  github_following: '(error)'
+};
 
 // The required user agent header to send to the GitHub API. See http://developer.github.com/v3/#user-agent-required
 var githubApiHeaders = {
@@ -314,17 +320,24 @@ https.get({
         githubUserData = parseErrorGithubUserData;
       }
     }
-    // Not good stuff.
+    // Known bad stuff.
+    else if (response.statusCode === 403) {
+      var retryAt = parseInt(response.headers['x-ratelimit-reset'], 10);
+      if (retryAt) {
+        retryAt *= 1000;
+        console.log('Rate limit error while loading GitHub user data. Retry at ' + new Date(retryAt));
+      } else {
+        console.log('Rate limit error while loading GitHub user data. Unable to determine retry date.');
+      }
+      githubUserData = rateLimitGithubUserData;
+    }
+    // Unknown bad stuff.
     else {
       console.log('Error %@ while loading GitHub user data:'.fmt(response.statusCode));
       console.log(output);
       console.log('Headers:');
       console.log(response.headers);
-      if (response.statusCode === 403) {
-        githubUserData = rateLimitGithubUserData;
-      } else {
-        githubUserData = apiErrorGithubUserData;
-      }
+      githubUserData = errorGithubUserData;
     }
     compileClient();
   });
