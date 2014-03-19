@@ -161,19 +161,19 @@ function linkify_entities(tweet) {
   len = urlsAndMedia.length;
   for (i = 0; i < len; i++) {
     entry = urlsAndMedia[i];
-    index_map[entry.indices[0]] = [entry.indices[1], "<a href='"+(entry.expanded_url||entry.url)+"'>"+entry.display_url+"</a>"];
+    index_map[entry.indices[0]] = [entry.indices[1], "<a class='me-twitter-link' href='"+(entry.expanded_url||entry.url)+"'>"+entry.display_url+"</a>"];
   }
   // hashtags
   len = tweet.entities.hashtags ? tweet.entities.hashtags.length : 0;
   for (i = 0; i < len; i++) {
     entry = tweet.entities.hashtags[i];
-    index_map[entry.indices[0]] = [entry.indices[1], "<a href='http://twitter.com/search?q="+"#"+entry.text+"'>%@</a>"];
+    index_map[entry.indices[0]] = [entry.indices[1], "<a class='me-twitter-link me-twitter-hashtag' href='http://twitter.com/search?q="+"#"+entry.text+"'>%@</a>"];
   }
   // user_mentions
   len = tweet.entities.user_mentions ? tweet.entities.user_mentions.length : 0;
   for (i = 0; i < len; i++) {
     entry = tweet.entities.user_mentions[i];
-    index_map[entry.indices[0]] = [entry.indices[1], "<a title='"+entry.name+"' href='http://twitter.com/"+entry.screen_name+"'>%@</a>"];
+    index_map[entry.indices[0]] = [entry.indices[1], "<a class='me-twitter-link me-twitter-user' title='"+entry.name+"' href='http://twitter.com/"+entry.screen_name+"'>%@</a>"];
   }
 
   var result = "";
@@ -194,9 +194,14 @@ function linkify_entities(tweet) {
       last_i = end;
     }
   }
-
   if (i > last_i) {
     result += tweet.text.substring(last_i, i);
+  }
+
+  // finally, add any media to the bottom.
+  if (tweet.entities.media && tweet.entities.media[0]) {
+    entry = tweet.entities.media[0];
+    result += '<div class="me-tweet-media"><a href="%@"><img src="%@"/></a></div>'.fmt(entry.expanded_url || entry.url, entry.media_url);
   }
   
   return result;

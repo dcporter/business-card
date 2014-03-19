@@ -610,7 +610,7 @@
 
 .me-twitter-handle-link {
   text-decoration: none;
-  color: #458;
+  color: #006185;
 }
 .me-twitter-handle-link:hover {
   text-decoration: underline;
@@ -645,7 +645,7 @@
 
 .me-tweet-wrapper a {
   text-decoration: none;
-  color: black;
+  color: #006185;
 }
 .me-tweet-wrapper:not(.touch) a:hover {
   text-decoration: underline;
@@ -669,6 +669,7 @@ a.me-tweet-tweeter {
   width: 48px;
   border-radius: 5px;
   background-size: 100%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3)
 }
 .me-tweet-avatar:not(.me-retweet) {
   left: -58px;
@@ -700,11 +701,25 @@ a.me-tweet-tweeter:hover > .me-tweet-name {
   cursor: default;
 }
 
+/* Inline images. */
+.me-tweet-media {
+  max-width: 100%;
+}
+.me-tweet-media img {
+  margin-top: 3px;
+  max-width: 100%;
+  max-height: 200px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
 /* The footer (buttons for mice). */
 .me-tweet-footer {
   margin-top: 3px;
   font-size: 14px;
   cursor: default;
+}
+.me-tweet-footer > a {
+  color: black;
 }
 .me-tweet-retweet, .me-tweet-reply {
   color: #777;
