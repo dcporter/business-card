@@ -76,6 +76,17 @@
 %{springboard}
 
     </div>
+    <div id="unsupported-browser-wrapper">
+      <div id="unsupported-browser-message">
+        <h1>Sorry!</h1>
+        <p>You're using an unsupported browser.</p>
+        <p>
+          The main feature your browser needs to support is CSS transformations, supported in IE versions 9 and later;
+          FireFox versions 16 and later; and Webkit since forever. If you're running
+          one of those browsers and you're seeing this message, <a href="mailto:dcporter@gmail.com">let me know</a>!
+        </p>
+      </div>
+    </div>
     <script id="platform" type="text/javascript">
 
 // Utils. Yeah, there are better ways to do this.
@@ -94,6 +105,38 @@ SC.browser.touch = 'ontouchstart' in window || SC.browser.name === SC.BROWSER.an
 if (SC.browser.touch) {
   $('body').addClass('touch');
 }
+
+// Add CSS & DOM prefixes to SC.browser (from SC.platform).
+(function(){
+  var userAgent = navigator.userAgent.toLowerCase();
+  if ((/webkit/).test( userAgent )) {
+    SC.browser.cssPrefix = 'webkit';
+    SC.browser.domCSSPrefix = 'Webkit';
+  } else if((/opera/).test( userAgent )) {
+    SC.browser.cssPrefix = 'opera';
+    SC.browser.domCSSPrefix = 'O';
+  } else if((/msie/).test( userAgent ) && !(/opera/).test( userAgent )) {
+    SC.browser.cssPrefix = 'ms';
+    SC.browser.domCSSPrefix = 'ms';
+  } else if((/mozilla/).test( userAgent ) && !(/(compatible|webkit)/).test( userAgent )) {
+    SC.browser.cssPrefix = 'moz';
+    SC.browser.domCSSPrefix = 'Moz';
+  }
+})();
+
+// Detect CSS transitions support. (This is our baseline requirement for browser compatibility.)
+// (Disclaimer: I'm only bothering to polyfill -webkit- and -ms-. A third of FireFox users need
+// -moz- still, but that will hopefully shrink quickly.)
+if (typeof document.body.style.transform === 'string') SC.browser.supportsCSSTransforms = true;
+else if (typeof document.body.style['webkitTransform'] === 'string') SC.browser.supportsCSSTransforms = true;
+else if (typeof document.body.style['msTransform'] === 'string') SC.browser.supportsCSSTransforms = true;
+else SC.browser.supportsCSSTransforms = false;
+
+// Use platform tests to determine browser support status. Show the UNSUPPORTED overlay if needed.
+if (SC.browser.isIE8OrLower || !SC.browser.supportsCSSTransforms) {
+  $('#unsupported-browser-wrapper').addClass('active');
+}
+
 
 // Scroll the Mobile Safari address bar up out of sight.
 function hideAddressBar() {

@@ -583,3 +583,37 @@ Springboard background
     /*end hiding springboard*/
   }
 }
+
+/*
+
+  The Unsupported Browser Pane
+
+*/
+
+#unsupported-browser-wrapper {
+  top: 0; bottom: 0; left: 0; right: 0;
+  background-color: darkred;
+  text-align: center;
+  display: none;
+}
+
+#unsupported-browser-wrapper.active {
+  display: block;
+}
+
+#unsupported-browser-wrapper * {
+  position: relative;
+}
+#unsupported-browser-wrapper p {
+  margin-bottom: 1em;
+}
+
+#unsupported-browser-message {
+  width: 80%;
+  min-width: 260px;
+  max-width: 425px;
+  margin: 30px auto;
+  background-color: #FED;
+  border-radius: 15px;
+  padding: 15px;
+}
